@@ -19,22 +19,27 @@
     grid-column: 1 / 3;
     height: 50px;
     padding: 5px;
+    display: flex;
+    justify-content: space-between;
 }
 
 .toolbar-content {
-    float: right;
     display: flex;
     flex-direction: column;
 }
 
 .toolbar-logo {
-    float: left;
     padding-left: 15px;
     margin-top: -10px;
     color: cornflowerblue;
     border-left-color: cornflowerblue;
     border-left-width: 10px;
     border-left-style: solid;
+    display: flex;
+}
+
+.toolbar-sub {
+    float: left;
 }
 
 .toolbar-link {

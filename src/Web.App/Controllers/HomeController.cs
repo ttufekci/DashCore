@@ -174,6 +174,10 @@ namespace Web.App.Controllers
                 ConnectionName = connectionName
             };
 
+            var assemblyVersion = typeof(Startup).Assembly.GetName().Version.ToString();
+
+            tableDataVM.Version = assemblyVersion;
+
             tableDataVM.TableGroups = await _util.GetTableGroups(tableDataVM.TableList);
 
             var columnList = new List<TableColumnInfo>();
@@ -202,6 +206,10 @@ namespace Web.App.Controllers
                 TableName = tableName,
                 ConnectionName = connectionName
             };
+
+            var assemblyVersion = typeof(Startup).Assembly.GetName().Version.ToString();
+
+            tableDataVM.Version = assemblyVersion;
 
             var columnList = new List<TableColumnInfo>();
             var tableDataDict = new PagedData { Data = new Dictionary<int, Row>() };

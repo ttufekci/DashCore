@@ -23,5 +23,6 @@ namespace Web.App.Models
         public string ParentColumn { get; internal set; }
         public int PagerStart { get; set; }
         public string SearchFields { get; set; }
+        public string Version { get; internal set; }
     }
 }
