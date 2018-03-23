@@ -1,0 +1,25 @@
+﻿@model Web.App.Models.TablesMenuVM
+
+<div style="padding-top: 5px; height: 25px; display: flex;">
+    <span style="padding-left: 10px; padding-top: 2px;"><input id="tableSearch" placeholder="Filter" type="text" /></span>
+    <button id="searchBtn" title="Table search" onclick="tableSearch();">&#x26B2;</button>
+</div>
+<ul style="margin-top: 5px;">
+    @{
+        var idCounter = 0;
+    }
+    @foreach (var item in Model.TableGroups)
+    {
+        idCounter++;
+        <li>
+            <a href="#" class="menu-plus" id="plus-@idCounter" onclick="toggleVisibility('@idCounter')"><span id="span-@idCounter">+&nbsp;</span>@item.Key</a>
+            <ul id="table-@idCounter" style="display:none;">
+                @foreach (var listItem in item.Value)
+                {
+                    <li><a class="menu-leaf" href='@Url.Action("TableData","Home",new { tableName = listItem, connectionName = Model.ConnectionName})'>@listItem</a></li>
+                }
+            </ul>
+        </li>
+    }
+</ul>
+<hr />

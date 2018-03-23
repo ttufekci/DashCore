@@ -1,0 +1,141 @@
+﻿@model Web.App.Models.TableDataVM
+@using Web.App.Models
+
+<div class="tablelist">
+    @Html.Partial("TablesMenu", new TablesMenuVM { TableGroups = Model.TableGroups, ConnectionName = Model.ConnectionName })
+</div>
+<div class="content">
+    <h5>Edit Data</h5>
+    <div>
+        <p>@Model.TableName</p>
+        <p style="color: red;">@ViewBag.Message</p>
+    </div>
+    
+    <button id="backToList">Back To List</button>
+    <br />
+    <form asp-action="EditDataPost" asp-controller="Edit" method="post">
+        <table id="tabledata">
+            <tbody>
+                @for (var i = 0; i < Model.ColumnList.Count(); i++)
+                {
+                    var item = Model.ColumnList[i];
+                    var data = Model.RowData.TableColumnInfos[i].Value;
+                    var oldData = Model.RowData.TableColumnInfos[i].OldValue;
+
+                    <tr>
+                        <td>@item.Name @(item.IsPrimaryKey ? "(Primary Key)" : "") 
+                        <span style="font-style: italic; color: powderblue;">@((item.DataType.Equals("NUMBER") || item.DataType.Equals("LONG")) ? "(Number)" : (item.DataType.Equals("DATE") ? "(DATE dd.mm.yyyy HH24:MI:SS)":""))</span></td>
+                        <td>
+                            <input type="hidden" name="OldDataFields" value="@oldData" />
+                            <div style="display: flex; flex-flow: column;">    
+                                <div style="display: flex;">
+                                    @if (item.IsForeignKey)
+                                    {
+                                        <input id="@item.Name" type="text" name="DataFields" @(item.IsPrimaryKey ? "readonly" : "") value="@data" 
+                                           onblur="findDescription('@item.Name','@item.ForeignTable','@item.ForeignTableKeyColumn')"/>
+                                        <button onclick='lookupSearch("@item.Name", "@item.ForeignTable","@item.ForeignTableKeyColumn"); return false;'>...</button>
+                                    }
+                                    else
+                                    {
+                                        if (item.DataType.Equals("NUMBER") || item.DataType.Equals("LONG"))
+                                        {
+                                            <input id="@item.Name" type="number" placeholder="Number Input" name="DataFields" @(item.IsPrimaryKey ? "readonly" : "") value="@data"/>
+                                        }
+                                        else if (item.DataType.Equals("DATE"))
+                                        {
+                                            <input id="@item.Name" type="text" name="DataFields" @(item.IsPrimaryKey ? "readonly" : "") value="@data"/>
+                                        }
+                                        else
+                                        {
+                                            <input id="@item.Name" type="text" name="DataFields" @(item.IsPrimaryKey ? "readonly" : "") value="@data"/>
+                                        }
+                                    }
+                                </div>
+                                @if (item.IsForeignKey)
+                                {                                    
+                                    <textarea id="@item.Name-Desc" disabled>@item.ForeignDescription</textarea>
+                                }
+                            </div>
+                        </td>
+                        <td>
+                            @if (item.IsPrimaryKey)
+                            {
+                                <input type="checkbox" checked /> <text>Use Sequence</text>
+                                <span>--> @Model.SequenceName</span>
+                            }
+                        </td>
+                    </tr>
+                }
+                <tr><td><button>Save</button></td><td></td><td></td></tr>
+            </tbody>
+        </table>
+        @Html.HiddenFor(x => x.ConnectionName)
+        @Html.HiddenFor(x => x.TableName)
+        @Html.HiddenFor(x => x.TableColumnInfosJson)
+        <div class="pageFooter">
+            <br />
+        </div>
+    </form>
+</div>
+
+@section Scripts
+    {
+<script type="text/javascript">
+        var btnElement = document.getElementById('addConn');
+        btnElement.addEventListener('click', goHome);
+
+        var btnElementList = document.getElementById('backToList');
+        btnElementList.addEventListener('click', goListFromEdit);
+
+        function getSearchFields() {
+            var searchFields = [];
+
+            var colFieldsLength = '@Model.SearchValues.Count';
+
+            @foreach(var key in Model.SearchValues.Keys)
+            {
+                var searchValue = Model.SearchValues[key];
+                if (string.IsNullOrEmpty(searchValue))
+                {
+                    continue;
+                };
+                <text>
+                var searchField = { name: '@key', value: '@searchValue' }
+                searchFields.push(searchField);
+                </text>
+            }
+
+            return JSON.stringify(searchFields);
+        }
+
+        function goListFromEdit() {
+            console.log('go to list');
+            var searchFieldsJson = getSearchFields();
+            window.location = '@Url.Action("TableDataSearch","Home")' +
+                '?tableName=@Model.TableName&connectionName=@Model.ConnectionName&page=@Context.Request.Query["page"]&sortColumn=@Model.SortColumn' +
+                '&sortDir=@Model.SortDir&searchFields=' + searchFieldsJson;
+        }
+
+        function findDescription(itemId, foreignTable, foreignTableKey) {
+            var idElement = document.getElementById(itemId);
+
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    console.log('statusok:', xhttp.responseText);
+                    var y = JSON.parse(xhttp.responseText);
+                    if (y.success && y.message) {
+                        document.getElementById(itemId + '-Desc').innerHTML = y.message;
+                    } else {
+                        document.getElementById(itemId + '-Desc').innerHTML = 'Not Found';
+                        idElement.value = '';
+                    }
+                }
+            };
+
+            xhttp.open("GET", '@Url.Action("FindForeignDescription", "Edit")' + '?connectionName=@Model.ConnectionName&foreignTable=' + foreignTable
+                + '&foreignTableKey=' + foreignTableKey + '&foreignKeyValue=' + idElement.value, true);
+            xhttp.send();
+        }
+</script>
+}

@@ -1,0 +1,272 @@
+﻿@model Web.App.Models.TableDataVM
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>ConnectDB</title>
+    <link rel="stylesheet" href="~/css/tablelist.css" />
+</head>
+<body>
+    <div class="searchContainer">
+        <div class="searchContent">
+            <div><p>@Model.TableName</p></div>
+            <table id="tabledata">
+                <thead>
+                    <tr>
+                        <th></th>
+                        @foreach (var col in Model.ColumnList)
+                        {
+                            var searchValue = "";
+                            Model.SearchValues.TryGetValue(col.Name, out searchValue);
+                            <th>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <div style="float: left;">
+                                        @col.Name
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; padding-top: 0; margin-top: -7px; padding-left: 2px;">
+                                        <a href="#" class="arrow-a" onclick="startSearchWithOrder('@col.Name','Asc','@col.DataType')">
+                                            <span id="hd-up-@col.Name" class="arrow up-arrow" title="Sort Asc"
+                                                  @if (Model.SortColumn == col.Name && Model.SortDir == "Asc") { <text> style="color: white;" </text> }>
+                                                &#9650;
+                                            </span>
+                                        </a>
+                                        <a href="#" class="arrow-a arrow-down-a" onclick="startSearchWithOrder('@col.Name','Desc')">
+                                            <span id="hd-down-@col.Name" class="arrow down-arrow" title="Sort Desc"
+                                                  @if (Model.SortColumn == col.Name && Model.SortDir == "Desc") { <text> style="color: white;" </text> }>
+                                                &#9660;
+                                            </span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </th>
+                        }
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        var tableRowIndex = 0;
+                    }
+
+                    <tr>
+                        <td></td>
+                        @foreach (var col in Model.ColumnList)
+                        {
+                            var searchValue = "";
+                            Model.SearchValues.TryGetValue(col.Name, out searchValue);
+                            <td>
+                                <div class="search-column-container">
+                                    <div style="padding-top: 1px;">
+                                        <input type="text" id="search_@col.Name" value="@searchValue" class="search-input" />
+                                    </div>
+                                    <div>
+                                        <button id="searchBtn" title="search" onclick="startSearch('@Model.ConnectionName','@Model.TableName')">&#x26B2;</button>
+                                    </div>
+                                </div>
+                            </td>
+                        }
+                        <td></td>
+                    </tr>
+
+                    @foreach (var item in Model.TableDataList.Data.Values)
+                    {
+                        var rowDescription = "";
+                        <tr>
+                            <td>
+                                <input type="submit" name="action" id="searchButton" onclick='selectValue("@tableRowIndex"); return false;' title="Select" value="&#9755" />
+                            </td>
+                            @foreach (var data in item.TableColumnInfos)
+                            {
+                                rowDescription += data.Name + ":" + data.Value + "   ";
+                                <td>
+                                @if (data.Name == Model.ForeignTableColumn)
+                                {
+                                    <input type="hidden" id="htc_@tableRowIndex" value="@data.Value"/>
+                                }
+                                @data.Value
+                                </td>
+                            }
+                            <td>
+                                <input type="hidden" id="desc_@tableRowIndex" value="@rowDescription"/>
+                            </td>
+                        </tr>
+                        tableRowIndex++;
+                    }
+                </tbody>
+            </table>
+            <div class="pageFooter">
+                <br />
+                <div style="display: none">
+                    @Model.TableDataList.Total
+                    @Model.TableDataList.PageCount
+                    @Model.TableDataList.Page
+                    @Model.TableDataList.PageSize
+                </div>
+                <hr />
+            <span>Page Size</span>
+            <span style="padding-right: 15px; padding-bottom: 10px;">
+                <select id="pageSize" onchange="pageSizeChanged()">
+                    @foreach (var pageSize in new int[]{ 10, 15, 50, 100 })
+                    {
+                        if (pageSize == Model.TableDataList.PageSize)
+                        {
+                            <option value="@pageSize" selected>@pageSize</option>
+                        }
+                        else
+                        {
+                            <option value="@pageSize">@pageSize</option>
+                        }
+                    }
+                </select>
+            </span>
+
+            @if (Model.PagerStart > 1)
+            {
+                <a class="page-link" onclick="startSearchWithPage('@Model.ConnectionName','@Model.TableName',0)" href="#"><<</a><span>&nbsp</span>
+                <a class="page-link" onclick="startSearchWithPage('@Model.ConnectionName','@Model.TableName',@(Model.TableDataList.Page-1))" href="#"><</a><span>&nbsp</span>
+                <a class="page-link" onclick="startSearchWithPage('@Model.ConnectionName','@Model.TableName',@(Model.PagerStart-2))" href="#">...</a><span>&nbsp</span>
+            }
+
+            @for (int i = Model.PagerStart; i < (Model.TableDataList.PageCount + 1) && i < Model.PagerStart + 10; i++)
+            {
+                if ((i - 1) == Model.TableDataList.Page)
+                {
+                    <a class="active-page-link" onclick="startSearchWithPage('@Model.ConnectionName','@Model.TableName',@(i - 1))"
+                        href='#'>@i</a><span>&nbsp</span>
+                }
+                else
+                {
+                    <a class="page-link" onclick="startSearchWithPage('@Model.ConnectionName','@Model.TableName',@(i - 1))"
+                        href='#'>@i</a><span>&nbsp</span>
+                }
+            }
+
+            @if (Model.TableDataList.PageCount > 10 && (Model.PagerStart < ((Model.TableDataList.PageCount-1)/ 10) * 10))
+            {
+                <a class="page-link" onclick="startSearchWithPage('@Model.ConnectionName','@Model.TableName',@(Model.PagerStart + 9))"
+                   href='#'>...</a><span>&nbsp</span>
+            }
+
+            @if (Model.TableDataList.PageCount > 10)
+            {
+                <a class="page-link" onclick="startSearchWithPage('@Model.ConnectionName','@Model.TableName',@(Model.TableDataList.Page+1))" href='#'>></a><span>&nbsp</span>
+                <a class="page-link" onclick="startSearchWithPage('@Model.ConnectionName','@Model.TableName',@(Model.TableDataList.PageCount-1))"
+                   href='#'>>></a><span>&nbsp</span>
+            }
+
+            <span>Page @(Model.TableDataList.Page + 1) from Total @Model.TableDataList.PageCount Pages</span>
+
+
+                @*<span>Pages</span>
+                @for (int i = 0; i < Model.TableDataList.PageCount; i++)
+        {
+            <a href='@Url.Action("TableDataLookup","Edit", new { connectionName = Model.ConnectionName, tableName = Model.TableName, page = i})'>@(i + 1)</a><span>&nbsp</span>
+}*@
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        function selectValue(tableRowIndx) {
+            var foreignTableColumn = '@Model.ForeignTableColumn';
+            var element = document.getElementById('htc_' + tableRowIndx);
+            var elementDesc = document.getElementById('desc_' + tableRowIndx);
+            window.opener.document.getElementById('@Model.ParentColumn').value = element.value;
+            window.opener.document.getElementById('@Model.ParentColumn-Desc').value = elementDesc.value;
+            close();
+        }
+
+        function startSearchWithPage(connectionName, tableName, page, pageSize) {
+            var searchFields = [];
+
+            var colFieldsLength = '@Model.ColumnList.Count()';
+
+            @for (int i = 0; i < Model.ColumnList.Count(); i++)
+            {
+                var colName = Model.ColumnList[i].Name;
+                <text>
+                var inputElement = document.getElementById('search_@colName');
+                if (inputElement.value !== '') {
+                    var searchField = { name: '@colName', value: inputElement.value }
+                    searchFields.push(searchField);
+                }
+                </text>
+            }
+
+            if (!pageSize) {
+                pageSize = 10;
+            }
+
+            var sortColumn = '@Model.SortColumn';
+            var sortDir = '@Model.SortDir';
+            var sortQuery = '';
+
+            if (sortColumn) {
+                sortQuery = '&sortColumn=' + sortColumn + '&sortDir=' + sortDir;
+            }
+
+            var searchFieldsJson = JSON.stringify(searchFields);
+            window.location = '@Url.Action("TableDataSearchLookup", "Edit")' + '?connectionName=' + connectionName + '&tableName=' +
+                tableName + '&searchFields=' + searchFieldsJson + '&parentColumn=@Model.ParentColumn&tableColumn=@Model.ForeignTableColumn'  + '&page=' + page + '&pageSize=' + pageSize + sortQuery;
+        }
+
+        function startSearchWithOrder(column, sortDir, dataType) {
+            var searchFields = [];
+
+            var colFieldsLength = '@Model.ColumnList.Count()';
+
+            @for (int i = 0; i < Model.ColumnList.Count(); i++)
+            {
+                var colName = Model.ColumnList[i].Name;
+                <text>
+                var inputElement = document.getElementById('search_@colName');
+                if (inputElement.value !== '') {
+                    var searchField = { name: '@colName', value: inputElement.value, dataType: dataType }
+                    searchFields.push(searchField);
+                }
+                </text>
+            }
+
+            var searchFieldsJson = JSON.stringify(searchFields);
+            window.location = '@Url.Action("TableDataSearchLookup", "Edit")' + '?connectionName=@Model.ConnectionName&tableName=@Model.TableName' +
+                '&searchFields=' + searchFieldsJson + '&sortColumn=' + column + '&parentColumn=@Model.ParentColumn&tableColumn=@Model.ForeignTableColumn' +
+                '&sortDir=' + sortDir + "&sortColumnDataType=" + dataType;
+        }
+
+        function startSearch(connectionName, tableName) {
+            var searchFields = [];
+
+            var colFieldsLength = '@Model.ColumnList.Count()';
+
+            @for (int i = 0; i < Model.ColumnList.Count(); i++)
+            {
+                var colName = Model.ColumnList[i].Name;
+                <text>
+                var inputElement = document.getElementById('search_@colName');
+                if (inputElement.value !== '') {
+                    var searchField = { name: '@colName', value: inputElement.value }
+                    searchFields.push(searchField);
+                }
+                </text>
+            }
+
+            var searchFieldsJson = JSON.stringify(searchFields);
+
+            var sortColumn = '@Model.SortColumn';
+            var sortDir = '@Model.SortDir';
+            var sortQuery = '';
+
+            if (sortColumn) {
+                sortQuery = '&sortColumn=' + sortColumn + '&sortDir=' + sortDir;
+            }
+
+            window.location = '@Url.Action("TableDataSearchLookup", "Edit")' + '?connectionName=' + connectionName + '&tableName=' +
+                tableName + '&searchFields=' + searchFieldsJson + sortQuery;
+            }
+    </script>
+</body>
+</html>

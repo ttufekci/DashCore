@@ -1,0 +1,61 @@
+﻿@model IEnumerable<Web.App.Models.CustomConnection>
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+    <link rel="icon" href="@Url.Content("~/favicon.ico")" />
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <div class="container">
+        <div class="toolbar">
+            <div class="toolbar-logo">
+                <h2 class="toolbar-title">DashCore</h2>
+            </div>
+            <div class="toolbar-content">
+                <div style="padding-left: 10px; padding-right: 10px; text-align: center; height: 27px;">
+                    
+                </div>
+                <div class="toolbar-link">
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="content-action">
+                <a href="@Url.Action("AddConnection")">Add Connection</a>
+            </div>
+
+            <div class="listConn" style="display: grid; grid-template-columns: 20% 20% 20% 20% 20%; grid-column-gap: 5px;">
+            @foreach (var conn in Model)
+            {
+                <div class="connItem">
+                    <form asp-action="TableData" asp-controller="Home">
+                        <p>
+                            @conn.Name - @conn.Host
+                            <input type="hidden" name="connectionName" value="@conn.Name" />
+                            <br />
+                            <a asp-action="EditConnection" asp-controller="Home" asp-route-id="@conn.Id">Edit</a>
+                            <br />
+                            <a asp-action="RemoveConnection" asp-controller="Home" asp-route-id="@conn.Id">Delete</a>
+                        </p>
+                        <button name="connect">Connect</button>
+                    </form>
+                </div>
+            }
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/riot@3.8/riot+compiler.min.js"></script>
+    <script src="~/js/editlink.tag" type="riot/tag"></script>
+    <script>
+        riot.mount('editlink');
+    </script>
+</body>
+</html>

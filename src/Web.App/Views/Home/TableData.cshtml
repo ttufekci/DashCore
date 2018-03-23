@@ -1,0 +1,320 @@
+﻿@model Web.App.Models.TableDataVM
+@using Web.App.Models
+@{
+    ViewData["Title"] = "ConnectDB";
+}
+
+<div class="tablelist">
+    @Html.Partial("TablesMenu",new TablesMenuVM { TableGroups = Model.TableGroups, ConnectionName = Model.ConnectionName})
+</div>
+<div class="content">
+    <div class="loader" style="display: none;"></div>
+    @if (Model.TableName == "undefined")
+    {
+        <p>Select table from the List</p>
+    }
+    else
+    {
+        <div>
+            <h5>@Model.TableName</h5>
+            <a onclick="gotoAdd();" href='#'>Add</a>
+            <br />
+        </div>
+        <div style="overflow: auto;">
+            <table id="tabledata" style="overflow: auto;">
+                <thead>
+                    <tr>
+                        <th></th>
+                        @foreach (var col in Model.ColumnList)
+                        {
+                            var searchValue = "";
+                            Model.SearchValues.TryGetValue(col.Name, out searchValue);
+                            <th>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <div style="float: left;">
+                                        @col.Name
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; padding-top: 0; margin-top: -7px; padding-left: 2px;">
+                                        <a href="#" class="arrow-a" onclick="startSearchWithOrder('@col.Name','Asc','@col.DataType')">
+                                            <span id="hd-up-@col.Name" class="arrow up-arrow" title="Sort Asc"
+                                                  @if (Model.SortColumn == col.Name && Model.SortDir == "Asc") { <text> style="color: white;" </text> }>
+                                                &#9650;
+                                            </span>
+                                        </a>
+                                        <a href="#" class="arrow-a arrow-down-a" onclick="startSearchWithOrder('@col.Name','Desc')">
+                                            <span id="hd-down-@col.Name" class="arrow down-arrow" title="Sort Desc"
+                                                  @if (Model.SortColumn == col.Name && Model.SortDir == "Desc") { <text> style="color: white;" </text> }>
+                                                &#9660;
+                                            </span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        var tableRowIndex = 0;
+                    }
+                    <tr>
+                        <td></td>
+                        @foreach (var col in Model.ColumnList)
+                        {
+                            var searchValue = "";
+                            Model.SearchValues.TryGetValue(col.Name, out searchValue);
+                            <td>
+                                <div class="search-column-container">
+                                    <div style="padding-top: 1px;">
+                                        <input type="text" id="search_@col.Name" value="@searchValue" class="search-input" />
+                                    </div>
+                                    <div>
+                                        <button id="searchBtn" title="search" onclick="startSearch('@Model.ConnectionName','@Model.TableName')">&#x26B2;</button>
+                                    </div>
+                                </div>
+                            </td>
+                        }
+                    </tr>
+                    @foreach (var item in Model.TableDataList.Data.Values)
+                    {
+                        <tr>
+                            <td>
+                                <div class="action-container">
+                                    <div>
+                                        <input type="submit" name="action" id="editButton" title="edit" onclick="gotoEdit('@Model.ConnectionName','@Model.TableName','@item.PrimaryKey', '@tableRowIndex')" value="&#x270E;" />
+                                    </div>
+                                    <div style="width: 1px;"></div>
+                                    <div>
+                                        <input type="submit" name="action" id="deleteButton" title="delete" onclick="deleteRow('@Model.ConnectionName','@Model.TableName','@item.PrimaryKey','@tableRowIndex')" value="&#x2718;" />
+                                    </div>
+                                </div>
+                            </td>
+                            @foreach (var data in item.TableColumnInfos)
+                            {
+                                <td>@data.Value</td>
+                            }
+                        </tr>
+                        tableRowIndex++;
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="pageFooter">
+            <br />
+            <div style="display: none">
+                @Model.TableDataList.Total
+                @Model.TableDataList.PageCount
+                @Model.TableDataList.Page
+                @Model.TableDataList.PageSize
+            </div>
+            <hr />
+            <span>Page Size</span>
+            <span style="padding-right: 15px; padding-bottom: 10px;">
+                <select id="pageSize" onchange="pageSizeChanged()">
+                    @foreach (var pageSize in new int[]{ 10, 15, 50, 100 })
+                    {
+                        if (pageSize == Model.TableDataList.PageSize)
+                        {
+                            <option value="@pageSize" selected>@pageSize</option>
+                        }
+                        else
+                        {
+                            <option value="@pageSize">@pageSize</option>
+                        }
+                    }
+                </select>
+            </span>
+
+            @if (Model.PagerStart > 1)
+            {
+                <a class="page-link" onclick="startSearchWithPage('@Model.ConnectionName','@Model.TableName',0)" href="#"><<</a><span>&nbsp</span>
+                <a class="page-link" onclick="startSearchWithPage('@Model.ConnectionName','@Model.TableName',@(Model.TableDataList.Page-1))" href="#"><</a><span>&nbsp</span>
+                <a class="page-link" onclick="startSearchWithPage('@Model.ConnectionName','@Model.TableName',@(Model.PagerStart-2))" href="#">...</a><span>&nbsp</span>
+            }
+
+            @for (int i = Model.PagerStart; i < (Model.TableDataList.PageCount + 1) && i < Model.PagerStart + 10; i++)
+            {
+                if ((i - 1) == Model.TableDataList.Page)
+                {
+                    <a class="active-page-link" onclick="startSearchWithPage('@Model.ConnectionName','@Model.TableName',@(i - 1))"
+                        href='#'>@i</a><span>&nbsp</span>
+                }
+                else
+                {
+                    <a class="page-link" onclick="startSearchWithPage('@Model.ConnectionName','@Model.TableName',@(i - 1))"
+                        href='#'>@i</a><span>&nbsp</span>
+                }
+            }
+
+            @if (Model.TableDataList.PageCount > 10 && (Model.PagerStart < ((Model.TableDataList.PageCount-1)/ 10) * 10))
+            {
+                <a class="page-link" onclick="startSearchWithPage('@Model.ConnectionName','@Model.TableName',@(Model.PagerStart + 9))"
+                   href='#'>...</a><span>&nbsp</span>
+            }
+
+            @if (Model.TableDataList.PageCount > 10)
+            {
+                <a class="page-link" onclick="startSearchWithPage('@Model.ConnectionName','@Model.TableName',@(Model.TableDataList.Page+1))" href='#'>></a><span>&nbsp</span>
+                <a class="page-link" onclick="startSearchWithPage('@Model.ConnectionName','@Model.TableName',@(Model.TableDataList.PageCount-1))"
+                   href='#'>>></a><span>&nbsp</span>
+            }
+
+            <span>Page @(Model.TableDataList.Page + 1) from Total @Model.TableDataList.PageCount Pages</span>
+        </div>
+    }
+    @section Scripts
+        {
+        <script>
+            function pageSizeChanged() {
+                var selectElement = document.getElementById('pageSize');
+                console.log('selectElement:' + selectElement.value);
+                var pageSize = selectElement.value;
+                startSearchWithPage('@Model.ConnectionName', '@Model.TableName', 0, pageSize);
+            }
+
+            function gotoEdit(connectionName, tableName, id, tableRowIndx) {
+                var searchFieldsJson = getSearchFields();
+                window.location = '@Url.Action("EditData","Edit")' + '?connectionName=' + connectionName + '&tableName=' + tableName + '&id=' +
+                    id + '&page=@Model.TableDataList.Page' + '&tableRowIndx=' + tableRowIndx +
+                    '&sortColumn=@Model.SortColumn&sortDir=@Model.SortDir&searchFields=' + searchFieldsJson;
+            }
+
+            function gotoAdd() {
+                console.log('goto add');
+                var searchFieldsJson = getSearchFields();
+                window.location = '@Url.Action("AddData","Home")' + '?connectionName=@Model.ConnectionName&tableName=@Model.TableName' +
+                    '&page=@Model.TableDataList.Page' + '&sortColumn=@Model.SortColumn&sortDir=@Model.SortDir&searchFields=' + searchFieldsJson;
+            }
+
+            function getSearchFields() {
+                var searchFields = [];
+
+                var colFieldsLength = '@Model.ColumnList.Count()';
+
+                @for (int i = 0; i < Model.ColumnList.Count(); i++)
+                {
+                    var colName = Model.ColumnList[i].Name;
+                    <text>
+                    var inputElement = document.getElementById('search_@colName');
+                    if (inputElement.value !== '') {
+                        var searchField = { name: '@colName', value: inputElement.value }
+                        searchFields.push(searchField);
+                    }
+                    </text>
+                }
+
+                return JSON.stringify(searchFields);
+            }
+
+            function deleteRow(connectionName, tableName, id, tableRowIndx) {
+                console.log('delete');
+
+                var r = confirm("Deleting row!");
+                if (r == true) {
+                    toggleLoader();
+                    var xhttp = new XMLHttpRequest();
+                    xhttp.onreadystatechange = function () {
+                        if (this.readyState == 4 && this.status == 200) {
+                            window.location = '@Url.Action("TableData", "Home")' + '?connectionName=' + connectionName + '&tableName=' + tableName + '&page=@Model.TableDataList.Page';
+                        }
+                        toggleLoader();
+                    };
+
+                    var searchFieldsJson = getSearchFields();
+                    xhttp.open("POST", '@Url.Action("DeleteRowAsync", "Edit")' + '?connectionName=' + connectionName + '&tableName=' + tableName +
+                        '&id=' + id + '&page=@Model.TableDataList.Page' + '&tableRowIndx=' + tableRowIndx + '&searchFields=' + searchFieldsJson, true);
+                    xhttp.send();
+                } else {
+                    console.log('no delete');
+                }
+            }
+
+            function startSearchWithPage(connectionName, tableName, page, pageSize) {
+                var searchFields = [];
+
+                var colFieldsLength = '@Model.ColumnList.Count()';
+
+                @for (int i = 0; i < Model.ColumnList.Count(); i++)
+                {
+                    var colName = Model.ColumnList[i].Name;
+                    <text>
+                    var inputElement = document.getElementById('search_@colName');
+                    if (inputElement.value !== '') {
+                        var searchField = { name: '@colName', value: inputElement.value }
+                        searchFields.push(searchField);
+                    }
+                    </text>
+                }
+
+                if (!pageSize) {
+                    pageSize = 10;
+                }
+
+                var sortColumn = '@Model.SortColumn';
+                var sortDir = '@Model.SortDir';
+                var sortQuery = '';
+
+                if (sortColumn) {
+                    sortQuery = '&sortColumn=' + sortColumn + '&sortDir=' + sortDir;
+                }
+
+                var searchFieldsJson = JSON.stringify(searchFields);
+                window.location = '@Url.Action("TableDataSearch", "Home")' + '?connectionName=' + connectionName + '&tableName=' +
+                    tableName + '&searchFields=' + searchFieldsJson + '&page=' + page + '&pageSize=' + pageSize + sortQuery;
+            }
+
+            function startSearch(connectionName, tableName) {
+                var searchFields = [];
+
+                var colFieldsLength = '@Model.ColumnList.Count()';
+
+                @for (int i = 0; i < Model.ColumnList.Count(); i++)
+                {
+                    var colName = Model.ColumnList[i].Name;
+                    <text>
+                    var inputElement = document.getElementById('search_@colName');
+                    if (inputElement.value !== '') {
+                        var searchField = { name: '@colName', value: inputElement.value }
+                        searchFields.push(searchField);
+                    }
+                    </text>
+                }
+
+                var searchFieldsJson = JSON.stringify(searchFields);
+
+                var sortColumn = '@Model.SortColumn';
+                var sortDir = '@Model.SortDir';
+                var sortQuery = '';
+
+                if (sortColumn) {
+                    sortQuery = '&sortColumn=' + sortColumn + '&sortDir=' + sortDir;
+                }
+
+                window.location = '@Url.Action("TableDataSearch", "Home")' + '?connectionName=' + connectionName + '&tableName=' +
+                    tableName + '&searchFields=' + searchFieldsJson + sortQuery;
+             }
+
+            function startSearchWithOrder(column, sortDir, dataType) {
+                var searchFields = [];
+
+                var colFieldsLength = '@Model.ColumnList.Count()';
+
+                @for (int i = 0; i < Model.ColumnList.Count(); i++)
+                {
+                    var colName = Model.ColumnList[i].Name;
+                    <text>
+                    var inputElement = document.getElementById('search_@colName');
+                    if (inputElement.value !== '') {
+                        var searchField = { name: '@colName', value: inputElement.value, dataType: dataType }
+                        searchFields.push(searchField);
+                    }
+                    </text>
+                }
+
+                var searchFieldsJson = JSON.stringify(searchFields);
+                window.location = '@Url.Action("TableDataSearch", "Home")' + '?connectionName=@Model.ConnectionName&tableName=@Model.TableName' +
+                    '&searchFields=' + searchFieldsJson + '&sortColumn=' + column + '&sortDir=' + sortDir + "&sortColumnDataType=" + dataType;
+            }
+        </script>
+    }
+</div>

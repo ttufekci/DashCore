@@ -1,0 +1,146 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/tablelist.css" />
+</head>
+<body>
+    <div class="container">
+        <div class="toolbar">
+            <div class="toolbar-logo">
+                <h2 class="toolbar-title">DashCore</h2>
+            </div>
+            <div class="toolbar-content">
+                <div style="padding-left: 10px; padding-right: 10px; text-align: center; height: 27px;">
+                    <h5 style="margin-top: 4px; font-family: Arial;">@Model.ConnectionName</h5>
+                </div>
+                <div class="toolbar-link">
+                    <a id="showSqlHistory" href="#" style="padding-right: 10px;" onclick="showSqlHistory()">Show Sql History</a>
+                    <a id="addConn" href="#" style="padding-right: 10px;">Home</a>
+                    <a id="clearCache" href="#">Clear cache</a>
+                </div>
+            </div>
+        </div>
+
+        @RenderBody()
+    </div>
+
+    <script type="text/javascript">
+        function tableSearch() {
+            var tableSearchElement = document.getElementById('tableSearch').value;
+            var menuPlusElements = document.getElementsByClassName('menu-plus');
+
+            for (var i = 0; i < menuPlusElements.length; i++) {
+                var item = menuPlusElements.item(i);
+                var itemText = item.text;
+                console.log('itemText:' + itemText);
+                tableSearchElementWithPlus = '+ ' + tableSearchElement;
+
+                if (tableSearchElementWithPlus.startsWith(itemText) || tableSearchElement == '') {
+                    console.log('startswith');
+                    item.style.display = "block";
+                } else {
+                    item.style.display = "none";
+                }
+            }
+
+            var menuLeafElements = document.getElementsByClassName('menu-leaf');
+
+            for (var i = 0; i < menuLeafElements.length; i++) {
+                var item = menuLeafElements.item(i);
+                var itemText = item.text;
+                console.log('itemText:' + itemText);
+
+                if (itemText.startsWith(tableSearchElement) || tableSearchElement == '') {
+                    console.log('startswith');
+                    item.style.display = "block";
+                } else {
+                    item.style.display = "none";
+                }
+            }
+        }
+
+        function toggleVisibility(idCounter) {
+            var element = document.getElementById("table-" + idCounter);
+            var spanElement = document.getElementById("span-" + idCounter);
+
+            if (element.style.display === "block") {
+                element.style.display = "none";
+                spanElement.innerHTML = "+&nbsp;";
+            } else {
+                element.style.display = "block";
+                spanElement.innerHTML = "-&nbsp;&nbsp;";
+            }
+        }
+
+        function toggleLoader() {
+            var elementList = document.getElementsByClassName("loader");
+            var element = elementList[0];
+            if (element.style.display === "block") {
+                element.style.display = "none";
+            } else {
+                element.style.display = "block";
+            }
+        }
+
+        function goHome() {
+            console.log('go home');
+            window.location = '@Url.Action("Index","Home")'
+        }
+
+        function goList() {
+            console.log('go to list');
+            window.location = '@Url.Action("TableData","Home")' + "?tableName=@Model.TableName&connectionName=@Model.ConnectionName";
+        }
+
+        function startSearchLookup(connectionName, tableName, colName) {
+            var inputElement = document.getElementById('search_' + colName);
+            window.location = '@Url.Action("TableDataSearchLookup", "Edit")' + '?connectionName=' + connectionName + '&tableName=' +
+                tableName + '&searchColumn=' + colName + '&searchValue=' + inputElement.value;
+        }
+
+        function lookupSearch(column, lookupTable, lookupTableColumn) {
+            var w = 800;
+            var h = 600;
+            var left = (screen.width / 2) - (w / 2);
+            var top = (screen.height / 2) - (h / 2);
+            var url = '@Url.Action("LookupSearch","Edit")' + '?connectionName=@Model.ConnectionName&tableName=' + lookupTable +
+                '&tableColumn=' + lookupTableColumn + '&parentColumn=' + column;
+            var lookupWindow = window.open(url, "lookup", 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, copyhistory=no, width=' + w
+                + ', height=' + h + ', top=' + top + ', left=' + left);
+        }
+
+        function clearCache() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    alert('Cache cleared');
+                }
+            };
+
+            xhttp.open("POST", '@Url.Action("ClearCache", "Edit")' + '?connectionName=@Model.ConnectionName&tableName=@Model.TableName', true);
+            xhttp.send();
+        }
+
+        var btnElement = document.getElementById('addConn');
+        btnElement.addEventListener('click', goHome);
+
+        var btnClearCache = document.getElementById('clearCache');
+        btnClearCache.addEventListener('click', clearCache);
+
+        function showSqlHistory() {
+            var w = 800;
+            var h = 600;
+            var left = (screen.width / 2) - (w / 2);
+            var top = (screen.height / 2) - (h / 2);
+            var url = '@Url.Action("ShowSqlHistory","Edit")' + '?connectionName=@Model.ConnectionName&tableName=';
+            var sqlHistoryWindow = window.open(url, "Sql History", 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, copyhistory=no, width=' + w
+                + ', height=' + h + ', top=' + top + ', left=' + left);
+        }
+    </script>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>
