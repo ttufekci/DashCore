@@ -11,7 +11,11 @@ namespace Web.App.Models
         [Key]
         public long Id { get; set; }
         public string SessionId { get; set; }
+        [Display(Name = "Date")]
         public DateTime EventDate { get; set; }
+        [Display(Name = "Raw Sql")]
         public string SqlText { get; set; }
+        [Display(Name = "Basic Sql")]
+        public string BasicSqlText { get; set; }
     }
 }

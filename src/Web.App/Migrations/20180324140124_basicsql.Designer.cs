@@ -11,9 +11,10 @@ using Web.App.Models;
 namespace Web.App.Migrations
 {
     [DbContext(typeof(CustomConnectionContext))]
-    partial class CustomConnectionContextModelSnapshot : ModelSnapshot
+    [Migration("20180324140124_basicsql")]
+    partial class basicsql
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

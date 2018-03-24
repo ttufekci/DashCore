@@ -16,25 +16,25 @@
 <table id="tabledata">
     <thead>
         <tr>
-                <th>
-                    @Html.DisplayNameFor(model => model.SessionId)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.EventDate)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.SqlText)
-                </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EventDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.BasicSqlText)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SqlText)
+            </th>
         </tr>
     </thead>
     <tbody>
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.SessionId)
+                @Html.DisplayFor(modelItem => item.EventDate)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.EventDate)
+                @Html.DisplayFor(modelItem => item.BasicSqlText)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.SqlText)

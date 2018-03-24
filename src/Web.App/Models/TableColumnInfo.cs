@@ -16,5 +16,6 @@ namespace Web.App.Models
         public string ForeignTable { get; set; }
         public string ForeignTableKeyColumn { get; set; }
         public string ForeignDescription { get; set; }
+        public bool Visible { get; set; } = true;
     }
 }

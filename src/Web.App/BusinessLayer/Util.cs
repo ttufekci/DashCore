@@ -303,7 +303,8 @@ namespace Web.App.BusinessLayer
             var sessionSqlHistory = new SessionSqlHistory
             {
                 EventDate = DateTime.Now,
-                SqlText = tableDataListSql
+                SqlText = tableDataListSql,
+                BasicSqlText = "select * from " + tableName
             };
 
             var myRowDict = new Dictionary<int, Row>();
@@ -422,8 +423,9 @@ namespace Web.App.BusinessLayer
             var sessionSqlHistory = new SessionSqlHistory
             {
                 EventDate = DateTime.Now,
-                SqlText = tableDataListSql
-            };
+                SqlText = tableDataListSql,
+                BasicSqlText = "select * from " + tableName + " where " + searchColumn + " like '" + searchValue + "%'"
+            };  
 
             var myRowDict = new Dictionary<int, Row>();
 
@@ -564,7 +566,8 @@ namespace Web.App.BusinessLayer
             var sessionSqlHistory = new SessionSqlHistory
             {
                 EventDate = DateTime.Now,
-                SqlText = tableDataListSql
+                SqlText = tableDataListSql,
+                BasicSqlText = "select * from " + tableName + whereStmt + (string.IsNullOrEmpty(orderStmt) ? "" : orderStmt)
             };
 
             var myRowDict = new Dictionary<int, Row>();
@@ -741,7 +744,8 @@ namespace Web.App.BusinessLayer
             var sessionSqlHistory = new SessionSqlHistory
             {
                 EventDate = DateTime.Now,
-                SqlText = sqlStmt
+                SqlText = sqlStmt,
+                BasicSqlText = sqlStmt
             };
 
             var row = new Row();

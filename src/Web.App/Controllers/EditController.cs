@@ -163,7 +163,8 @@ namespace Web.App.Controllers
             var sessionHistorySql = new SessionSqlHistory
             {
                 EventDate = DateTime.Now,
-                SqlText = updateSqlStmt
+                SqlText = updateSqlStmt,
+                BasicSqlText = updateSqlStmt
             };
 
             using (var oconn = new OracleConnection(connectionString))
@@ -267,7 +268,8 @@ namespace Web.App.Controllers
             var sessionHistorySql = new SessionSqlHistory
             {
                 EventDate = DateTime.Now,
-                SqlText = deleteSqlStmt
+                SqlText = deleteSqlStmt,
+                BasicSqlText = deleteSqlStmt
             };
 
             using (var oconn = new OracleConnection(connectionString))
@@ -305,6 +307,7 @@ namespace Web.App.Controllers
             var tableDataDict = new PagedData { Data = new Dictionary<int, Row>() };
 
             columnList = await _util.GetColumnInfo(connectionName, tableName);
+
             tableDataDict = await _util.GetTableDataList(columnList, connectionName, tableName, page);
 
             tableDataVM.ColumnList = columnList;

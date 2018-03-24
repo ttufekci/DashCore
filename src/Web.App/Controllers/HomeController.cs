@@ -343,7 +343,8 @@ namespace Web.App.Controllers
             var sessionHistorySql = new SessionSqlHistory
             {
                 EventDate = DateTime.Now,
-                SqlText = insertSqlStmt
+                SqlText = insertSqlStmt,
+                BasicSqlText = insertSqlStmt
             };
 
             using (var oconn = new OracleConnection(connectionString))
