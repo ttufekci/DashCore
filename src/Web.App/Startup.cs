@@ -32,6 +32,7 @@ namespace Web.App
             {
                 var context = serviceScope.ServiceProvider.GetRequiredService<CustomConnectionContext>();
                 context.Database.Migrate();
+                context.Database.ExecuteSqlCommand("delete from SessionSqlHistory");
             }
 
             if (env.IsDevelopment())

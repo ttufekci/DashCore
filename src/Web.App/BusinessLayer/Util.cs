@@ -738,6 +738,12 @@ namespace Web.App.BusinessLayer
                 sqlStmt = "select * from " + tableName + " where " + whereColumnListStmt;
             }
 
+            var sessionSqlHistory = new SessionSqlHistory
+            {
+                EventDate = DateTime.Now,
+                SqlText = sqlStmt
+            };
+
             var row = new Row();
 
             using (var oconn = new OracleConnection(connectionString))
@@ -793,6 +799,9 @@ namespace Web.App.BusinessLayer
                     }
                 }
             }
+
+            await _context.SessionSqlHistory.AddAsync(sessionSqlHistory);
+            await _context.SaveChangesAsync();
 
             return row;
         }
