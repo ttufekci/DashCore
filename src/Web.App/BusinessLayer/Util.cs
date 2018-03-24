@@ -679,6 +679,37 @@ namespace Web.App.BusinessLayer
             return sequenceList;
         }
 
+        public async Task<List<string>> GetSequenceList(string connectionName)
+        {
+            var customConnection = await _context.CustomConnection.SingleOrDefaultAsync(x => x.Name == connectionName);
+
+            var connectionString = Util.GetConnectionString(customConnection);
+
+            var sequenceList = new List<string>();
+
+            const string sequenceListSql = "select SEQUENCE_NAME from user_sequences order by SEQUENCE_NAME";
+
+            using (var oconn = new OracleConnection(connectionString))
+            {
+                oconn.Open();
+                using (var cmd = new OracleCommand
+                {
+                    Connection = oconn,
+                    CommandText = sequenceListSql,
+                    CommandType = CommandType.Text
+                })
+                {
+                    var dr = cmd.ExecuteReader();
+                    while (dr.Read())
+                    {
+                        sequenceList.Add(dr.GetString(0));
+                    }
+                }
+            }
+
+            return sequenceList;
+        }
+
         public async Task<string> FindForeignDescription(OracleConnection oconn, string connectionName, string foreignTable, string foreignTableKeyColumn, string keyValue)
         {
             var findForeignRowSql = "select * from " + foreignTable + " where " + foreignTableKeyColumn + " = '" + keyValue + "'";
@@ -732,7 +763,14 @@ namespace Web.App.BusinessLayer
 
                 for (int j = 0; j < columnList.Count(); j++)
                 {
-                    builder.Append(columnList[j].Name + "='" + oldColumnList[j].Value + "' and ");
+                    if (string.IsNullOrEmpty(oldColumnList[j].Value))
+                    {
+                        builder.Append(columnList[j].Name + " is null and ");
+                    }
+                    else
+                    {
+                        builder.Append(columnList[j].Name + "='" + oldColumnList[j].Value + "' and ");
+                    }
                 }
                 whereColumnListStmt = builder.ToString();
 
@@ -830,10 +868,7 @@ namespace Web.App.BusinessLayer
                 }
             }
 
-            if (result.Count == 0)
-            {
-                result["ALL"] = new List<string>();
-            }
+            result["Ungrouped"] = new List<string>();
 
             for (int i = 0; i < tableList.Count(); i++)
             {
@@ -851,10 +886,7 @@ namespace Web.App.BusinessLayer
                 }
                 else
                 {
-                    if (result.ContainsKey("ALL"))
-                    {
-                        result["ALL"].Add(table);
-                    }
+                    result["Ungrouped"].Add(table);
                 }
             }
 

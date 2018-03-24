@@ -77,21 +77,6 @@ namespace Web.App.Controllers
                 return View(connection);
             }
 
-            //if (info == "updatemetadata")
-            //{
-            //    var connectionString = Util.GetConnectionString(connection);
-            //    var oconn = new OracleConnection(connectionString);
-
-            //    oconn.Open();
-            //    oconn.Dispose();
-
-            //    ViewBag.ConnectionSuccess = "Connection Success";
-
-            //    return View(connection);
-            //}
-
-            // var metaData = await _context.TableMetadata.SingleOrDefaultAsync(x => x.TableName == );
-
             if (ModelState.IsValid)
             {
                 var tableList = await _util.GetTableList(connection);
@@ -255,6 +240,27 @@ namespace Web.App.Controllers
             columnList = await _util.GetColumnInfo(connectionName, tableName);
 
             var tablemetadata = await _context.TableMetadata.SingleOrDefaultAsync(x => x.TableName == tableName);
+
+            if (tablemetadata == null)
+            {
+                tablemetadata = new TableMetadata
+                {
+                    TableName = tableName
+                };
+                var sequenceList = await _util.GetSequenceList(connectionName);
+                tablemetadata.SequenceName = Util.FindBestMatch(tableName, sequenceList);
+
+                if (tablemetadata.Id > 0)
+                {
+                    _context.Update(tablemetadata);
+                }
+                else
+                {
+                    _context.Add(tablemetadata);
+                }
+
+                await _context.SaveChangesAsync();
+            }
 
             tableDataVM.ColumnList = columnList;
             tableDataVM.TableDataList = tableDataDict;

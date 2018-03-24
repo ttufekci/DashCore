@@ -16,6 +16,7 @@ namespace Web.App.BusinessLayer
         Task<PagedData> GetTableDataListSearch(string connectionName, string tableName, int page, string searchColumn, string searchValue);
         Task<PagedData> GetTableDataListSearch(string connectionName, string tableName, int page, int pageSize, List<SearchFieldInfo> searchFields, string sortColumn, string sortDir, string sortDataType);
         Task<List<string>> GetSequenceList(CustomConnection customConnection);
+        Task<List<string>> GetSequenceList(string connectionName);
         Task<Row> GetRowData(string connectionName, string tableName, string primaryKey, string tableColumnInfosJson);
         Task<Dictionary<string, List<string>>> GetTableGroups(List<string> tableList);
         Task<string> FindForeignDescription(OracleConnection oconn, string connectionName, string foreignTable, string foreignTableKeyColumn, string keyValue);
