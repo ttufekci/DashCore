@@ -1,0 +1,46 @@
+﻿@model Web.App.Models.EditBlobFieldVM
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>EditBlobField</title>
+</head>
+<body>
+    <form method="post" enctype="multipart/form-data" asp-controller="UploadFile" asp-action="Edit">
+        <h4>Edit Blob Field</h4>
+        <input type="file" onchange="ShowPreview(this)" />
+        <br />
+        <input type="submit" value="upload" />
+        <div>
+            <h5>Preview</h5>
+            <img id="imgPreview" />
+        </div>
+        @Html.HiddenFor(x => x.ConnectionName)
+        @Html.HiddenFor(x => x.Table)
+        @Html.HiddenFor(x => x.ColumnName)
+        @Html.HiddenFor(x => x.PrimaryKeyColumn)
+        @Html.HiddenFor(x => x.PrimaryKeyValue)
+    </form>
+
+    <script type="text/javascript">
+        function ShowPreview(input) {
+            console.log('input');
+            if (input.files && input.files[0]) {
+                console.log('files');
+                var ImageDir = new FileReader();
+                ImageDir.onload = function (e) {
+                    var imgElement = document.getElementById('imgPreview');
+                    imgElement.src = e.target.result;
+                    //$('#impPrev').attr('src', e.target.result);
+                }
+                ImageDir.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+</body>
+</html>

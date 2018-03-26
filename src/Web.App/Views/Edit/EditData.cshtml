@@ -5,12 +5,10 @@
     @Html.Partial("TablesMenu", new TablesMenuVM { TableGroups = Model.TableGroups, ConnectionName = Model.ConnectionName })
 </div>
 <div class="content">
-    <h5>Edit Data</h5>
+    <h5>Edit <span style="color: darkblue;">@Model.TableName</span></h5>
     <div>
-        <p>@Model.TableName</p>
         <p style="color: red;">@ViewBag.Message</p>
-    </div>
-    
+    </div>    
     <button id="backToList">Back To List</button>
     <br />
     <form asp-action="EditDataPost" asp-controller="Edit" method="post">
@@ -19,12 +17,14 @@
                 @for (var i = 0; i < Model.ColumnList.Count(); i++)
                 {
                     var item = Model.ColumnList[i];
+                    var primaryKey = Model.RowData.PrimaryKey;
                     var data = Model.RowData.TableColumnInfos[i].Value;
                     var oldData = Model.RowData.TableColumnInfos[i].OldValue;
 
                     <tr>
                         <td>@item.Name @(item.IsPrimaryKey ? "(Primary Key)" : "") 
-                        <span style="font-style: italic; color: powderblue;">@((item.DataType.Equals("NUMBER") || item.DataType.Equals("LONG")) ? "(Number)" : (item.DataType.Equals("DATE") ? "(DATE dd.mm.yyyy HH24:MI:SS)":""))</span></td>
+                        <span style="font-style: italic; color: powderblue;">@((item.DataType.Equals("NUMBER") || item.DataType.Equals("LONG")) ? "(Number)" : 
+                        (item.DataType.Equals("DATE") ? "(DATE dd.mm.yyyy HH24:MI:SS)":(item.DataType.Equals("BLOB") ? "(BLOB)" : "")))</span></td>
                         <td>
                             <input type="hidden" name="OldDataFields" value="@oldData" />
                             <div style="display: flex; flex-flow: column;">    
@@ -44,6 +44,10 @@
                                         else if (item.DataType.Equals("DATE"))
                                         {
                                             <input id="@item.Name" type="text" name="DataFields" @(item.IsPrimaryKey ? "readonly" : "") value="@data"/>
+                                        }
+                                        else if (item.DataType.Equals("BLOB"))
+                                        {
+                                            <button type="button" onclick="editBlobField('@primaryKey','@item.Name'); return false">Edit Blob Field</button>
                                         }
                                         else
                                         {
@@ -136,6 +140,17 @@
             xhttp.open("GET", '@Url.Action("FindForeignDescription", "Edit")' + '?connectionName=@Model.ConnectionName&foreignTable=' + foreignTable
                 + '&foreignTableKey=' + foreignTableKey + '&foreignKeyValue=' + idElement.value, true);
             xhttp.send();
+        }
+
+        function editBlobField(primaryKey, columnName) {
+            var w = 800;
+            var h = 600;
+            var left = (screen.width / 2) - (w / 2);
+            var top = (screen.height / 2) - (h / 2);
+            console.log('primarykey', primaryKey);
+            var url = '@Url.Action("EditBlobField","Edit")' + '?connectionName=@Model.ConnectionName&table=@(Model.TableName)&columnName=' + columnName + '&primaryKey=ID&primaryKeyValue=' + primaryKey;
+            var editBlowFieldWindow = window.open(url, "lookup", 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, copyhistory=no, width=' + w
+                + ', height=' + h + ', top=' + top + ', left=' + left);
         }
 </script>
 }

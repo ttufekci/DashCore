@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OracleClient;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -395,6 +397,46 @@ namespace Web.App.Controllers
         {
             var sessionSqlHistory = await _context.SessionSqlHistory.OrderByDescending(x => x.EventDate).ToListAsync();
             return View(sessionSqlHistory);
+        }
+
+        public async Task<IActionResult> EditBlobField(string connectionName, string table, string columnName, string primaryKey, string primaryKeyValue)
+        {
+            var editBlobFieldVM = new EditBlobFieldVM
+            {
+                ConnectionName = connectionName,
+                Table = table,
+                ColumnName = columnName,
+                PrimaryKeyColumn = primaryKey,
+                PrimaryKeyValue = primaryKeyValue
+            };
+            
+            return View(editBlobFieldVM);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadFile(string connectionName, IFormFile file, string table, string columnName, string primaryKey)
+        {
+            // full path to file in temp location
+            var filePath = Path.GetTempFileName();
+
+            if (file.Length > 0)
+            {
+                //using (var stream = new FileStream(filePath, FileMode.Create))
+                //{
+                //    await file.CopyToAsync(stream);
+                //}
+
+                using (var memoryStream = new MemoryStream())
+                {
+                    await file.CopyToAsync(memoryStream);
+                    var AvatarImage = memoryStream.ToArray();
+                }
+            }            
+
+            // process uploaded files
+            // Don't rely on or trust the FileName property without validation.
+
+            return Ok(new { count = filePath });
         }
     }
 }
