@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Web.App.Models.CustomConnection>
+﻿@model Web.App.Models.IndexVM
 @{
     Layout = null;
 }
@@ -17,6 +17,7 @@
         <div class="toolbar">
             <div class="toolbar-logo">
                 <h2 class="toolbar-title">DashCore</h2>
+                <h5 style="font: smaller; margin-top: 35px; margin-left: 3px;">@Model.Version</h5>
             </div>
             <div class="toolbar-content">
                 <div style="padding-left: 10px; padding-right: 10px; text-align: center; height: 27px;">
@@ -33,7 +34,7 @@
             </div>
 
             <div class="listConn" style="display: grid; grid-template-columns: 20% 20% 20% 20% 20%; grid-column-gap: 5px;">
-            @foreach (var conn in Model)
+            @foreach (var conn in Model.Connections)
             {
                 <div class="connItem">
                     <form asp-action="TableData" asp-controller="Home">

@@ -25,7 +25,12 @@ namespace Web.App.Controllers
 
         public async Task<IActionResult> Index()
         {
-            return View(await _context.CustomConnection.ToListAsync());
+            var assemblyVersion = typeof(Startup).Assembly.GetName().Version.ToString();
+
+            var version = assemblyVersion;
+            var connectionList = await _context.CustomConnection.ToListAsync();
+
+            return View(new IndexVM { Connections = connectionList, Version = version});
         }
 
         public IActionResult AddConnection()

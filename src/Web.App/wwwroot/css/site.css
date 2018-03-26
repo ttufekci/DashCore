@@ -22,13 +22,17 @@
 }
 
 .toolbar-logo {
-    float: left;
     padding-left: 15px;
     margin-top: -10px;
     color: cornflowerblue;
     border-left-color: cornflowerblue;
     border-left-width: 10px;
     border-left-style: solid;
+    display: flex;
+}
+
+.toolbar-title {
+    text-shadow: 1px 4px 3px rgba(0,0,0,0.2), 0px -5px 35px rgba(255,255,255,0.3);
 }
 
 .content {
