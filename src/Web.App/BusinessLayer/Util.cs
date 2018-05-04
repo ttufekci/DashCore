@@ -787,7 +787,23 @@ namespace Web.App.BusinessLayer
             }
             else
             {
-                whereStmt += " ID = " + primaryKey;
+                for (int i = 0; i < columnList.Count; i++)
+                {
+                    if (columnList[i].IsPrimaryKey)
+                    {
+                        if (columnList[i].DataType == "DATE")
+                        {
+                            whereStmt += columnList[i].Name + " = TO_DATE('" + primaryKey + "','dd.mm.yyyy HH24:MI:SS') and ";
+                        }
+                        else
+                        {
+                            whereStmt += columnList[i].Name + " = '" + primaryKey + "' and ";
+                        }
+                        break;
+                    }
+                }
+
+                whereStmt = whereStmt.TrimEnd(' ').TrimEnd('d').TrimEnd('n').TrimEnd('a');
             }
 
             var sqlStmt = "select * from " + tableName + " where " + whereStmt;

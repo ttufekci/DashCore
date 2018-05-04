@@ -198,7 +198,23 @@ namespace Web.App.Controllers
             }
             else
             {
-                whereStmt += " ID = " + primaryKey;
+                for (int i = 0; i < columnList.Count; i++)
+                {
+                    if (columnList[i].IsPrimaryKey)
+                    {
+                        if (columnList[i].DataType == "DATE")
+                        {
+                            whereStmt += columnList[i].Name + " = TO_DATE('" + primaryKey + "','dd.mm.yyyy HH24:MI:SS') and ";
+                        }
+                        else
+                        {
+                            whereStmt += columnList[i].Name + " = '" + primaryKey + "' and ";
+                        }
+                        break;
+                    }
+                }
+
+                whereStmt = whereStmt.TrimEnd(' ').TrimEnd('d').TrimEnd('n').TrimEnd('a');
             }
 
             updateSqlStmt = string.IsNullOrEmpty(primaryKey) ? "update " + tableName + " set " + columnListStmt + " where " + whereColumnListStmt : "update " + tableName + " set " + columnListStmt + " where " + whereStmt;
