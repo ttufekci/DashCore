@@ -162,60 +162,7 @@ namespace Web.App.Controllers
 
             var updateSqlStmt = "";
 
-            var whereStmt = "";
-
-            if (primaryKey.Contains(";"))
-            {
-                var primkeys = primaryKey.Split(';');
-
-                var j = 0;
-
-                foreach (var primkey in primkeys)
-                {
-                    for (int i = j; i < columnList.Count; i++)
-                    {
-                        if (columnList[i].IsPrimaryKey)
-                        {
-                            if (columnList[i].DataType == "DATE")
-                            {
-                                whereStmt += columnList[i].Name + " = TO_DATE('" + primkey + "','dd.mm.yyyy HH24:MI:SS') and ";
-                            }
-                            else
-                            {
-                                whereStmt += columnList[i].Name + " = '" + primkey + "' and ";
-                            }
-
-                            j = i + 1;
-                            goto Outer;
-                        }
-                    }
-
-                    Outer:
-                    continue;
-                }
-
-                whereStmt = whereStmt.TrimEnd(' ').TrimEnd('d').TrimEnd('n').TrimEnd('a');
-            }
-            else
-            {
-                for (int i = 0; i < columnList.Count; i++)
-                {
-                    if (columnList[i].IsPrimaryKey)
-                    {
-                        if (columnList[i].DataType == "DATE")
-                        {
-                            whereStmt += columnList[i].Name + " = TO_DATE('" + primaryKey + "','dd.mm.yyyy HH24:MI:SS') and ";
-                        }
-                        else
-                        {
-                            whereStmt += columnList[i].Name + " = '" + primaryKey + "' and ";
-                        }
-                        break;
-                    }
-                }
-
-                whereStmt = whereStmt.TrimEnd(' ').TrimEnd('d').TrimEnd('n').TrimEnd('a');
-            }
+            var whereStmt = Util.FindUniqueRowWhereStmt(primaryKey, columnList);
 
             updateSqlStmt = string.IsNullOrEmpty(primaryKey) ? "update " + tableName + " set " + columnListStmt + " where " + whereColumnListStmt : "update " + tableName + " set " + columnListStmt + " where " + whereStmt;
 
@@ -303,7 +250,9 @@ namespace Web.App.Controllers
             var row = tableDataDict.Data[tableRowIndx];
             var tableColumnInfosJson = row.TableColumnInfosJson;
 
-            var deleteSqlStmt = "delete " + tableName + " where ID=" + id;
+            var whereStmt = Util.FindUniqueRowWhereStmt(id, columnList);
+
+            var deleteSqlStmt = "delete " + tableName + " where " + whereStmt;
 
             if (string.IsNullOrEmpty(id))
             {

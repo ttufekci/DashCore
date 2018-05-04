@@ -28,5 +28,15 @@ namespace Dash.Tests
             var seqTask = Util.FindBestMatch(tableName, sequenceList);
             Assert.Equal("SEQ_PERSON", seqTask);
         }
+
+        [Fact]
+        public void TestFindMatchTableWithSuffixSequence()
+        {
+            var tableName = "DEPARTMENTS";
+            var sequenceList = new List<string>();
+            sequenceList.Add("DEPARTMENTS_SEQ");
+            var seqTask = Util.FindBestMatch(tableName, sequenceList);
+            Assert.Equal("DEPARTMENTS_SEQ", seqTask);
+        }
     }
 }

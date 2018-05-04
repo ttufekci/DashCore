@@ -80,7 +80,70 @@ namespace Web.App.BusinessLayer
             var insideSequenceWithoutPrefixWithoutHyphen = sequenceList.FirstOrDefault(x => x.EndsWith(tableNameWithoutPrefixWithoutHyphen));
             if (insideSequenceWithoutPrefixWithoutHyphen != null) return insideSequenceWithoutPrefixWithoutHyphen;
 
+            var insideSequenceSuffix = sequenceList.FirstOrDefault(x => x.StartsWith(tableName));
+            if (insideSequenceSuffix != null) return insideSequenceSuffix;
+
             return "undefined";
+        }
+
+        public static string FindUniqueRowWhereStmt(string primaryKey, List<TableColumnInfo> columnList)
+        {
+            var whereStmt = "";
+
+            if (primaryKey.Contains(";"))
+            {
+                var primkeys = primaryKey.Split(';');
+
+                var j = 0;
+
+                foreach (var primkey in primkeys)
+                {
+                    for (int i = j; i < columnList.Count; i++)
+                    {
+                        if (columnList[i].IsPrimaryKey)
+                        {
+                            if (columnList[i].DataType == "DATE")
+                            {
+                                whereStmt += columnList[i].Name + " = TO_DATE('" + primkey + "','dd.mm.yyyy HH24:MI:SS') and ";
+                            }
+                            else
+                            {
+                                whereStmt += columnList[i].Name + " = '" + primkey + "' and ";
+                            }
+
+                            j = i + 1;
+                            goto Outer;
+                        }
+                    }
+
+                    Outer:
+                    continue;
+                }
+
+                whereStmt = whereStmt.TrimEnd(' ').TrimEnd('d').TrimEnd('n').TrimEnd('a');
+            }
+            else
+            {
+                for (int i = 0; i < columnList.Count; i++)
+                {
+                    if (columnList[i].IsPrimaryKey)
+                    {
+                        if (columnList[i].DataType == "DATE")
+                        {
+                            whereStmt += columnList[i].Name + " = TO_DATE('" + primaryKey + "','dd.mm.yyyy HH24:MI:SS') and ";
+                        }
+                        else
+                        {
+                            whereStmt += columnList[i].Name + " = '" + primaryKey + "' and ";
+                        }
+                        break;
+                    }
+                }
+
+                whereStmt = whereStmt.TrimEnd(' ').TrimEnd('d').TrimEnd('n').TrimEnd('a');
+            }
+
+            return whereStmt;
         }
 
         public async Task<List<string>> GetTableList(CustomConnection customConnection)
@@ -751,60 +814,7 @@ namespace Web.App.BusinessLayer
 
             var columnList = await GetColumnInfo(connectionName, tableName);
 
-            var whereStmt = "";           
-
-            if (primaryKey.Contains(";"))
-            {
-                var primkeys = primaryKey.Split(';');
-
-                var j = 0;
-
-                foreach (var primkey in primkeys)
-                {                    
-                    for (int i=j; i < columnList.Count; i++)
-                    {
-                        if (columnList[i].IsPrimaryKey)
-                        {
-                            if (columnList[i].DataType == "DATE")
-                            {
-                                whereStmt += columnList[i].Name + " = TO_DATE('" + primkey + "','dd.mm.yyyy HH24:MI:SS') and ";
-                            }
-                            else
-                            {
-                                whereStmt += columnList[i].Name + " = '" + primkey + "' and ";
-                            }
-
-                            j = i + 1;
-                            goto Outer;
-                        }
-                    }
-
-                    Outer:
-                        continue;
-                }
-
-                whereStmt = whereStmt.TrimEnd(' ').TrimEnd('d').TrimEnd('n').TrimEnd('a');
-            }
-            else
-            {
-                for (int i = 0; i < columnList.Count; i++)
-                {
-                    if (columnList[i].IsPrimaryKey)
-                    {
-                        if (columnList[i].DataType == "DATE")
-                        {
-                            whereStmt += columnList[i].Name + " = TO_DATE('" + primaryKey + "','dd.mm.yyyy HH24:MI:SS') and ";
-                        }
-                        else
-                        {
-                            whereStmt += columnList[i].Name + " = '" + primaryKey + "' and ";
-                        }
-                        break;
-                    }
-                }
-
-                whereStmt = whereStmt.TrimEnd(' ').TrimEnd('d').TrimEnd('n').TrimEnd('a');
-            }
+            var whereStmt = FindUniqueRowWhereStmt(primaryKey, columnList);           
 
             var sqlStmt = "select * from " + tableName + " where " + whereStmt;
 

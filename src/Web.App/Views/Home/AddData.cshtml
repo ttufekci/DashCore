@@ -21,7 +21,7 @@
                                 <div style="display: flex;">                                    
                                     @if (item.IsForeignKey)
                                     {
-                                        <input id="@item.Name" type="text" name="DataFields" @(item.IsPrimaryKey ? "readonly" : "")
+                                        <input id="@item.Name" type="text" name="DataFields" @((item.IsPrimaryKey && Model.SequenceName != "undefined") ? "readonly" : "")
                                                onblur="findDescription('@item.Name','@item.ForeignTable','@item.ForeignTableKeyColumn')"/>
                                         <button onclick='lookupSearch("@item.Name", "@item.ForeignTable","@item.ForeignTableKeyColumn"); return false;'>...</button>
                                     }
@@ -29,11 +29,11 @@
                                     {
                                         if (item.DataType.Equals("NUMBER") || item.DataType.Equals("LONG"))
                                         {
-                                            <input id="@item.Name" type="number" placeholder="Number Input" name="DataFields" @(item.IsPrimaryKey ? "readonly" : "")/>
+                                            <input id="@item.Name" type="number" placeholder="Number Input" name="DataFields" @((item.IsPrimaryKey && Model.SequenceName != "undefined") ? "readonly" : "")/>
                                         }
                                         else
                                         {
-                                            <input id="@item.Name" type="text" name="DataFields" @(item.IsPrimaryKey ? "readonly" : "")/>
+                                            <input id="@item.Name" type="text" name="DataFields" @((item.IsPrimaryKey && Model.SequenceName != "undefined") ? "readonly" : "")/>
                                         }
                                     }
                                 </div>

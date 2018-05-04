@@ -328,7 +328,7 @@ namespace Web.App.Controllers
 
             for (int i = 0; i < dataFieldArray.Count(); i++)
             {
-                if (columnList[i].IsPrimaryKey)
+                if (columnList[i].IsPrimaryKey && tableDataVM.SequenceName != "undefined")
                 {
                     builder.Append(tablemetadata.SequenceName + ".NEXTVAL, ");
                 }
