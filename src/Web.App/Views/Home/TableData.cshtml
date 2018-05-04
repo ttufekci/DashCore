@@ -247,7 +247,9 @@
                 }
 
                 if (!pageSize) {
-                    pageSize = 10;
+                    var sel = document.getElementById("pageSize");
+                    var text = sel.options[sel.selectedIndex].text;
+                    pageSize = text;
                 }
 
                 var sortColumn = '@Model.SortColumn';
