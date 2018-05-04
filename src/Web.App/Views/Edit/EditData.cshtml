@@ -62,7 +62,7 @@
                             </div>
                         </td>
                         <td>
-                            @if (item.IsPrimaryKey)
+                            @if (item.IsPrimaryKey && !string.IsNullOrEmpty(Model.SequenceName) && Model.SequenceName != "undefined")
                             {
                                 <input type="checkbox" checked /> <text>Use Sequence</text>
                                 <span>--> @Model.SequenceName</span>

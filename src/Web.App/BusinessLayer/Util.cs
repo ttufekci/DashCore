@@ -362,7 +362,7 @@ namespace Web.App.BusinessLayer
 
                                 if (tableColumnInfo.IsPrimaryKey)
                                 {
-                                    row.PrimaryKey = tableColumnInfo.Value;
+                                    row.PrimaryKey = string.IsNullOrEmpty(row.PrimaryKey) ? tableColumnInfo.Value : row.PrimaryKey + ";" + tableColumnInfo.Value;
                                 }
 
                                 rowData.Add(tableColumnInfo);
@@ -481,7 +481,7 @@ namespace Web.App.BusinessLayer
 
                                 if (tableColumnInfo.IsPrimaryKey)
                                 {
-                                    row.PrimaryKey = tableColumnInfo.Value;
+                                    row.PrimaryKey = string.IsNullOrEmpty(row.PrimaryKey) ? tableColumnInfo.Value : row.PrimaryKey + ";" + tableColumnInfo.Value;
                                 }
 
                                 rowData.Add(tableColumnInfo);
@@ -624,7 +624,7 @@ namespace Web.App.BusinessLayer
 
                                 if (tableColumnInfo.IsPrimaryKey)
                                 {
-                                    row.PrimaryKey = tableColumnInfo.Value;
+                                    row.PrimaryKey = string.IsNullOrEmpty(row.PrimaryKey) ? tableColumnInfo.Value : row.PrimaryKey + ";" + tableColumnInfo.Value;
                                 }
 
                                 rowData.Add(tableColumnInfo);
@@ -751,7 +751,46 @@ namespace Web.App.BusinessLayer
 
             var columnList = await GetColumnInfo(connectionName, tableName);
 
-            var sqlStmt = "select * from " + tableName + " where ID = " + primaryKey;
+            var whereStmt = "";           
+
+            if (primaryKey.Contains(";"))
+            {
+                var primkeys = primaryKey.Split(';');
+
+                var j = 0;
+
+                foreach (var primkey in primkeys)
+                {                    
+                    for (int i=j; i < columnList.Count; i++)
+                    {
+                        if (columnList[i].IsPrimaryKey)
+                        {
+                            if (columnList[i].DataType == "DATE")
+                            {
+                                whereStmt += columnList[i].Name + " = TO_DATE('" + primkey + "','dd.mm.yyyy HH24:MI:SS') and ";
+                            }
+                            else
+                            {
+                                whereStmt += columnList[i].Name + " = '" + primkey + "' and ";
+                            }
+
+                            j = i + 1;
+                            goto Outer;
+                        }
+                    }
+
+                    Outer:
+                        continue;
+                }
+
+                whereStmt = whereStmt.TrimEnd(' ').TrimEnd('d').TrimEnd('n').TrimEnd('a');
+            }
+            else
+            {
+                whereStmt += " ID = " + primaryKey;
+            }
+
+            var sqlStmt = "select * from " + tableName + " where " + whereStmt;
 
             if (string.IsNullOrEmpty(primaryKey))
             {
@@ -821,7 +860,7 @@ namespace Web.App.BusinessLayer
 
                             if (columnInfo.IsPrimaryKey)
                             {
-                                row.PrimaryKey = columnInfo.Value;
+                                row.PrimaryKey = string.IsNullOrEmpty(row.PrimaryKey) ? columnInfo.Value : row.PrimaryKey + ";" + columnInfo.Value;
                             }
 
                             if (!string.IsNullOrEmpty(columnInfo.Value) && columnInfo.IsForeignKey)

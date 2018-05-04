@@ -54,7 +54,7 @@ namespace Web.App.Controllers
             var tablemetadata = await _context.TableMetadata.SingleOrDefaultAsync(x => x.TableName == tableName);
             tableDataVM.SequenceName = tablemetadata.SequenceName;
 
-            columnList = await _util.GetColumnInfo(connectionName, tableName);
+            // columnList = await _util.GetColumnInfo(connectionName, tableName);
 
             tableDataVM.ColumnList = columnList;
             tableDataVM.TableDataList = tableDataDict;
@@ -77,15 +77,17 @@ namespace Web.App.Controllers
 
         private static string GetPrimaryKey(List<TableColumnInfo> columnList, string[] values)
         {
+            var primaryKey = "";
             for(int i=0; i < columnList.Count(); i++)
             {
                 if (columnList[i].IsPrimaryKey)
                 {
-                    return values[i];
-                }
+                    primaryKey += values[i] + ";";
+                }                
             }
 
-            return null;
+            primaryKey = primaryKey.TrimEnd(';');
+            return primaryKey;
         }
 
         [HttpPost]
@@ -160,7 +162,46 @@ namespace Web.App.Controllers
 
             var updateSqlStmt = "";
 
-            updateSqlStmt = string.IsNullOrEmpty(primaryKey) ? "update " + tableName + " set " + columnListStmt + " where " + whereColumnListStmt : "update " + tableName + " set " + columnListStmt + " where ID=" + primaryKey;
+            var whereStmt = "";
+
+            if (primaryKey.Contains(";"))
+            {
+                var primkeys = primaryKey.Split(';');
+
+                var j = 0;
+
+                foreach (var primkey in primkeys)
+                {
+                    for (int i = j; i < columnList.Count; i++)
+                    {
+                        if (columnList[i].IsPrimaryKey)
+                        {
+                            if (columnList[i].DataType == "DATE")
+                            {
+                                whereStmt += columnList[i].Name + " = TO_DATE('" + primkey + "','dd.mm.yyyy HH24:MI:SS') and ";
+                            }
+                            else
+                            {
+                                whereStmt += columnList[i].Name + " = '" + primkey + "' and ";
+                            }
+
+                            j = i + 1;
+                            goto Outer;
+                        }
+                    }
+
+                    Outer:
+                    continue;
+                }
+
+                whereStmt = whereStmt.TrimEnd(' ').TrimEnd('d').TrimEnd('n').TrimEnd('a');
+            }
+            else
+            {
+                whereStmt += " ID = " + primaryKey;
+            }
+
+            updateSqlStmt = string.IsNullOrEmpty(primaryKey) ? "update " + tableName + " set " + columnListStmt + " where " + whereColumnListStmt : "update " + tableName + " set " + columnListStmt + " where " + whereStmt;
 
             var sessionHistorySql = new SessionSqlHistory
             {
