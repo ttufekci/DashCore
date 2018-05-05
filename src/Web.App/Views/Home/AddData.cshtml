@@ -6,6 +6,9 @@
 </div>
 <div class="content">
     <div><p>Table: @Model.TableName</p></div>
+    <div>
+        <p style="color: red;">@ViewBag.Message</p>
+    </div>
     <button id="backToList">Back To List</button>
     <br />
     <form asp-action="AddDataPost" asp-controller="Home" method="post">
@@ -17,29 +20,29 @@
                     <tr>
                         <td>@item.Name @(item.IsPrimaryKey ? "(Primary Key)" : "") <span style="font-style: italic; color: powderblue;">@((item.DataType.Equals("NUMBER") || item.DataType.Equals("LONG")) ? "(Number)" : "")</span></td>
                         <td>
-                            <div style="display: flex; flex-flow: column;">    
-                                <div style="display: flex;">                                    
+                            <div style="display: flex; flex-flow: column;">
+                                <div style="display: flex;">
                                     @if (item.IsForeignKey)
                                     {
                                         <input id="@item.Name" type="text" name="DataFields" @((item.IsPrimaryKey && Model.SequenceName != "undefined") ? "readonly" : "")
-                                               onblur="findDescription('@item.Name','@item.ForeignTable','@item.ForeignTableKeyColumn')"/>
+                                               onblur="findDescription('@item.Name','@item.ForeignTable','@item.ForeignTableKeyColumn')" />
                                         <button onclick='lookupSearch("@item.Name", "@item.ForeignTable","@item.ForeignTableKeyColumn"); return false;'>...</button>
                                     }
                                     else
                                     {
                                         if (item.DataType.Equals("NUMBER") || item.DataType.Equals("LONG"))
                                         {
-                                            <input id="@item.Name" type="number" placeholder="Number Input" name="DataFields" @((item.IsPrimaryKey && Model.SequenceName != "undefined") ? "readonly" : "")/>
+                                            <input id="@item.Name" type="number" placeholder="Number Input" name="DataFields" @((item.IsPrimaryKey && Model.SequenceName != "undefined") ? "readonly" : "") />
                                         }
                                         else
                                         {
-                                            <input id="@item.Name" type="text" name="DataFields" @((item.IsPrimaryKey && Model.SequenceName != "undefined") ? "readonly" : "")/>
+                                            <input id="@item.Name" type="text" name="DataFields" @((item.IsPrimaryKey && Model.SequenceName != "undefined") ? "readonly" : "") />
                                         }
                                     }
                                 </div>
                                 @if (item.IsForeignKey)
-                                {                                    
-                                <textarea id="@item.Name-Desc" disabled></textarea>
+                                {
+                                    <textarea id="@item.Name-Desc" disabled></textarea>
                                 }
                             </div>
                         </td>

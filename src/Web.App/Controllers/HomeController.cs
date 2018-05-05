@@ -89,13 +89,14 @@ namespace Web.App.Controllers
 
                 foreach (var table in tableList)
                 {
-                    var tablemetadata = await _context.TableMetadata.SingleOrDefaultAsync(x => x.TableName == table);
+                    var tablemetadata = await _util.GetTableMetadata(connection.Name, table);
 
                     if (tablemetadata == null)
                     {
                         tablemetadata = new TableMetadata();
                     }
 
+                    tablemetadata.Connection = connection.Name;
                     tablemetadata.TableName = table;
                     tablemetadata.SequenceName = Util.FindBestMatch(table, sequenceList);
 
@@ -119,6 +120,7 @@ namespace Web.App.Controllers
                 }
 
                 await _context.SaveChangesAsync();
+
                 return RedirectToAction(nameof(Index));
             }
             return View(connection);
@@ -248,7 +250,7 @@ namespace Web.App.Controllers
             var tableDataDict = new PagedData { Data = new Dictionary<int, Row>() };
             columnList = await _util.GetColumnInfo(connectionName, tableName);
 
-            var tablemetadata = await _util.GetTableMetadata(tableName);
+            var tablemetadata = await _util.GetTableMetadata(connectionName, tableName);
 
             if (tablemetadata == null)
             {
@@ -290,7 +292,7 @@ namespace Web.App.Controllers
             var tableDataDict = new PagedData { Data = new Dictionary<int, Row>() };
             columnList = await _util.GetColumnInfo(connectionName, tableName);
 
-            var tablemetadata = await _context.TableMetadata.SingleOrDefaultAsync(x => x.TableName == tableName);
+            var tablemetadata = await _util.GetTableMetadata(connectionName, tableName);
 
             tableDataVM.ColumnList = columnList;
             tableDataVM.TableDataList = tableDataDict;
@@ -362,6 +364,8 @@ namespace Web.App.Controllers
 
             await _context.SessionSqlHistory.AddAsync(sessionHistorySql);
             await _context.SaveChangesAsync();
+
+            ViewBag.Message = "Added successfully";
 
             return View("AddData", tableDataVM);
         }

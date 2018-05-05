@@ -51,10 +51,8 @@ namespace Web.App.Controllers
             var row = tableDataDict.Data[tableRowIndx];
             var tableColumnInfosJson = row.TableColumnInfosJson;
 
-            var tablemetadata = await _context.TableMetadata.SingleOrDefaultAsync(x => x.TableName == tableName);
+            var tablemetadata = await _util.GetTableMetadata(connectionName, tableName);
             tableDataVM.SequenceName = tablemetadata.SequenceName;
-
-            // columnList = await _util.GetColumnInfo(connectionName, tableName);
 
             tableDataVM.ColumnList = columnList;
             tableDataVM.TableDataList = tableDataDict;
@@ -109,7 +107,7 @@ namespace Web.App.Controllers
             var tableDataDict = new PagedData { Data = new Dictionary<int, Row>() };
             columnList = await _util.GetColumnInfo(connectionName, tableName);
 
-            var tablemetadata = await _context.TableMetadata.SingleOrDefaultAsync(x => x.TableName == tableName);
+            var tablemetadata = await _util.GetTableMetadata(connectionName, tableName);
 
             tableDataVM.ColumnList = columnList;
             tableDataVM.TableDataList = tableDataDict;

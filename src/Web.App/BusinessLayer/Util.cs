@@ -958,9 +958,9 @@ namespace Web.App.BusinessLayer
             return result;
         }
 
-        public async Task<TableMetadata> GetTableMetadata(string tableName)
+        public async Task<TableMetadata> GetTableMetadata(string connectionName, string tableName)
         {
-            var tableMetadata = await _context.TableMetadata.SingleOrDefaultAsync(x => x.TableName == tableName);
+            var tableMetadata = await _context.TableMetadata.SingleOrDefaultAsync(x => (x.Connection == connectionName && x.TableName == tableName));
             return tableMetadata;
         }
 
@@ -968,12 +968,13 @@ namespace Web.App.BusinessLayer
         {
             if (tableName.Equals("undefined")) return;
 
-            var tablemetadata = await GetTableMetadata(tableName);
+            var tablemetadata = await GetTableMetadata(connectionName, tableName);
 
             if (tablemetadata == null)
             {
                 tablemetadata = new TableMetadata
                 {
+                    Connection = connectionName,
                     TableName = tableName
                 };
             }
@@ -997,6 +998,7 @@ namespace Web.App.BusinessLayer
         {
             var tablemetadata = new TableMetadata
                 {
+                    Connection = connectionName,
                     TableName = tableName
                 };
 

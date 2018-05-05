@@ -10,6 +10,7 @@ namespace Web.App.Models
     {
         [Key]
         public long Id { get; set; }
+        public string Connection { get; set; }
         public string TableName { get; set; }
         public string SequenceName { get; set; }
     }
