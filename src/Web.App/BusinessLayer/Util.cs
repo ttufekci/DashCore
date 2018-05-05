@@ -957,5 +957,62 @@ namespace Web.App.BusinessLayer
 
             return result;
         }
+
+        public async Task<TableMetadata> GetTableMetadata(string tableName)
+        {
+            var tableMetadata = await _context.TableMetadata.SingleOrDefaultAsync(x => x.TableName == tableName);
+            return tableMetadata;
+        }
+
+        public async Task ResetTableMetadata(string connectionName, string tableName)
+        {
+            if (tableName.Equals("undefined")) return;
+
+            var tablemetadata = await GetTableMetadata(tableName);
+
+            if (tablemetadata == null)
+            {
+                tablemetadata = new TableMetadata
+                {
+                    TableName = tableName
+                };
+            }
+
+            var sequenceList = await GetSequenceList(connectionName);
+            tablemetadata.SequenceName = Util.FindBestMatch(tableName, sequenceList);
+
+            if (tablemetadata.Id > 0)
+            {
+                _context.Update(tablemetadata);
+            }
+            else
+            {
+                _context.Add(tablemetadata);
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task AddTableMetadata(string connectionName, string tableName)
+        {
+            var tablemetadata = new TableMetadata
+                {
+                    TableName = tableName
+                };
+
+            var sequenceList = await GetSequenceList(connectionName);
+            tablemetadata.SequenceName = Util.FindBestMatch(tableName, sequenceList);
+
+            if (tablemetadata.Id > 0)
+            {
+                _context.Update(tablemetadata);
+            }
+            else
+            {
+                _context.Add(tablemetadata);
+            }
+
+            await _context.SaveChangesAsync();
+        }
     }
 }

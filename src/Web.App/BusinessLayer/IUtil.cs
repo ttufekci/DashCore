@@ -20,5 +20,8 @@ namespace Web.App.BusinessLayer
         Task<Row> GetRowData(string connectionName, string tableName, string primaryKey, string tableColumnInfosJson);
         Task<Dictionary<string, List<string>>> GetTableGroups(List<string> tableList);
         Task<string> FindForeignDescription(OracleConnection oconn, string connectionName, string foreignTable, string foreignTableKeyColumn, string keyValue);
+        Task<TableMetadata> GetTableMetadata(string tableName);
+        Task ResetTableMetadata(string connectionName, string tableName);
+        Task AddTableMetadata(string connectionName, string tableName);
     }
 }

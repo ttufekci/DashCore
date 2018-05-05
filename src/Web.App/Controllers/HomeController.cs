@@ -170,6 +170,8 @@ namespace Web.App.Controllers
 
             tableDataVM.TableGroups = await _util.GetTableGroups(tableDataVM.TableList);
 
+            await _util.ResetTableMetadata(connectionName, tableName);
+
             var columnList = new List<TableColumnInfo>();
             var tableDataDict = new PagedData { Data = new Dictionary<int, Row>() };
 
@@ -208,6 +210,8 @@ namespace Web.App.Controllers
 
             tableDataVM.TableGroups = await _util.GetTableGroups(tableDataVM.TableList);
 
+            await _util.ResetTableMetadata(connectionName, tableName);
+
             if (tableName != "undefined")
             {
                 columnList = await _util.GetColumnInfo(connectionName, tableName);
@@ -244,27 +248,11 @@ namespace Web.App.Controllers
             var tableDataDict = new PagedData { Data = new Dictionary<int, Row>() };
             columnList = await _util.GetColumnInfo(connectionName, tableName);
 
-            var tablemetadata = await _context.TableMetadata.SingleOrDefaultAsync(x => x.TableName == tableName);
+            var tablemetadata = await _util.GetTableMetadata(tableName);
 
             if (tablemetadata == null)
             {
-                tablemetadata = new TableMetadata
-                {
-                    TableName = tableName
-                };
-                var sequenceList = await _util.GetSequenceList(connectionName);
-                tablemetadata.SequenceName = Util.FindBestMatch(tableName, sequenceList);
-
-                if (tablemetadata.Id > 0)
-                {
-                    _context.Update(tablemetadata);
-                }
-                else
-                {
-                    _context.Add(tablemetadata);
-                }
-
-                await _context.SaveChangesAsync();
+                await _util.AddTableMetadata(connectionName, tableName);
             }
 
             tableDataVM.ColumnList = columnList;
