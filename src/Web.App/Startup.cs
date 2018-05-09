@@ -5,11 +5,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Web.App.BusinessLayer;
 using Web.App.Models;
+using Web.App.Services;
 
 namespace Web.App
 {
@@ -22,7 +24,12 @@ namespace Web.App
             services.AddMvc();
             services.AddDbContext<CustomConnectionContext>(options =>
                     options.UseSqlite("Data Source=CustomConnection.db"));
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<CustomConnectionContext>()
+                .AddDefaultTokenProviders();
             services.AddScoped<IUtil,Util>();
+            // Add application services.
+            services.AddTransient<IEmailSender, EmailSender>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -39,6 +46,8 @@ namespace Web.App
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseAuthentication();
 
             var provider = new FileExtensionContentTypeProvider();
             provider.Mappings[".tag"] = "text/plain";

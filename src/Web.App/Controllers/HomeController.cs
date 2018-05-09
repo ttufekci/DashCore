@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.OracleClient;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -12,6 +13,7 @@ using Web.App.Models;
 
 namespace Web.App.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly CustomConnectionContext _context;
