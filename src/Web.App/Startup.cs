@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Web.App.BusinessLayer;
+using Web.App.Data;
 using Web.App.Models;
 using Web.App.Services;
 
@@ -22,18 +23,20 @@ namespace Web.App
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+            // Add Database Initializer
             services.AddDbContext<CustomConnectionContext>(options =>
                     options.UseSqlite("Data Source=CustomConnection.db"));
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<CustomConnectionContext>()
                 .AddDefaultTokenProviders();
+            services.AddScoped<IDbInitializer, DbInitializer>();
             services.AddScoped<IUtil,Util>();
             // Add application services.
-            services.AddTransient<IEmailSender, EmailSender>();
+            services.AddTransient<IEmailSender, EmailSender>();            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IDbInitializer dbInitializer)
         {
             using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
             {
@@ -48,6 +51,9 @@ namespace Web.App
             }
 
             app.UseAuthentication();
+
+            //Generate EF Core Seed Data
+            // dbInitializer.Initialize();
 
             var provider = new FileExtensionContentTypeProvider();
             provider.Mappings[".tag"] = "text/plain";
