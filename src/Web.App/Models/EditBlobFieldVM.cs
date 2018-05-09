@@ -13,5 +13,6 @@ namespace Web.App.Models
         public string PrimaryKeyColumn { get; set; }
         public string PrimaryKeyValue { get; set; }
         public byte[] Value { get; set; }
+        public string ImgDataURL { get; internal set; }
     }
 }

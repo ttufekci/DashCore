@@ -11,14 +11,14 @@
     <title>EditBlobField</title>
 </head>
 <body>
-    <form method="post" enctype="multipart/form-data" asp-controller="UploadFile" asp-action="Edit">
+    <form method="post" enctype="multipart/form-data" asp-controller="Edit" asp-action="UploadFile">
         <h4>Edit Blob Field</h4>
-        <input type="file" onchange="ShowPreview(this)" />
+        <input type="file" name="file" onchange="ShowPreview(this)" />
         <br />
         <input type="submit" value="upload" />
         <div>
             <h5>Preview</h5>
-            <img id="imgPreview" />
+            <img id="imgPreview" src="@Model.ImgDataURL"/>
         </div>
         @Html.HiddenFor(x => x.ConnectionName)
         @Html.HiddenFor(x => x.Table)

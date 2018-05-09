@@ -413,34 +413,80 @@ namespace Web.App.Controllers
                 PrimaryKeyColumn = primaryKey,
                 PrimaryKeyValue = primaryKeyValue
             };
-            
+
+            var customConnection = await _context.CustomConnection.SingleOrDefaultAsync(x => x.Name == connectionName);
+            var connectionString = Util.GetConnectionString(customConnection);
+
+            var updateSqlStmt = $"select {columnName} from {table} where {primaryKey} = :primaryKeyValue";
+
+            using (var oconn = new OracleConnection(connectionString))
+            {
+                oconn.Open();
+                using (var cmd = new OracleCommand
+                {
+                    Connection = oconn,
+                    CommandText = updateSqlStmt,
+                    CommandType = CommandType.Text
+                })
+                {
+                    cmd.Parameters.Add("primaryKeyValue", primaryKeyValue);
+                    var reader = cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        var imageValue = (byte[])reader[$"{columnName}"];
+                        editBlobFieldVM.Value = imageValue;
+
+                        var imreBase64Data = Convert.ToBase64String(imageValue);
+                        var imgDataURL = string.Format("data:image/png;base64,{0}", imreBase64Data);
+
+                        editBlobFieldVM.ImgDataURL = imgDataURL;
+                    }
+                }
+            }
+
             return View(editBlobFieldVM);
         }
 
         [HttpPost]
-        public async Task<IActionResult> UploadFile(string connectionName, IFormFile file, string table, string columnName, string primaryKey)
+        public async Task<IActionResult> UploadFile(string connectionName, IFormFile file, string table, string columnName, string primaryKeyColumn, string primaryKeyValue)
         {
-            // full path to file in temp location
-            var filePath = Path.GetTempFileName();
+            byte[] imageValue = null;
 
-            if (file.Length > 0)
+            if (file != null && file.Length > 0)
             {
-                //using (var stream = new FileStream(filePath, FileMode.Create))
-                //{
-                //    await file.CopyToAsync(stream);
-                //}
-
                 using (var memoryStream = new MemoryStream())
                 {
                     await file.CopyToAsync(memoryStream);
-                    var AvatarImage = memoryStream.ToArray();
+                    imageValue = memoryStream.ToArray();
                 }
-            }            
+            }
+
+            var customConnection = await _context.CustomConnection.SingleOrDefaultAsync(x => x.Name == connectionName);
+            var connectionString = Util.GetConnectionString(customConnection);
+
+            var updateSqlStmt = $"update {table} set {columnName} = :imageValue where {primaryKeyColumn} = :primaryKeyValue";
+
+            using (var oconn = new OracleConnection(connectionString))
+            {
+                oconn.Open();
+                using (var cmd = new OracleCommand
+                {
+                    Connection = oconn,
+                    CommandText = updateSqlStmt,
+                    CommandType = CommandType.Text
+                })
+                {
+                    cmd.Parameters.Add("imageValue", imageValue);
+                    cmd.Parameters.Add("primaryKeyValue", primaryKeyValue);
+                    var result = cmd.ExecuteNonQuery();
+                }
+            }
 
             // process uploaded files
             // Don't rely on or trust the FileName property without validation.
 
-            return Ok(new { count = filePath });
+            return Ok(new { Message = "Successfully saved"});
         }
     }
 }
