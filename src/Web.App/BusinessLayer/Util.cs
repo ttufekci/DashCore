@@ -812,11 +812,9 @@ namespace Web.App.BusinessLayer
 
             var connectionString = Util.GetConnectionString(customConnection);
 
-            var columnList = await GetColumnInfo(connectionName, tableName);
+            var columnList = await GetColumnInfo(connectionName, tableName);                       
 
-            var whereStmt = FindUniqueRowWhereStmt(primaryKey, columnList);           
-
-            var sqlStmt = "select * from " + tableName + " where " + whereStmt;
+            var sqlStmt = "";
 
             if (string.IsNullOrEmpty(primaryKey))
             {
@@ -842,6 +840,12 @@ namespace Web.App.BusinessLayer
                 whereColumnListStmt = whereColumnListStmt.TrimEnd(' ', 'd', 'n', 'a');
 
                 sqlStmt = "select * from " + tableName + " where " + whereColumnListStmt;
+            }
+            else
+            {
+                var whereStmt = FindUniqueRowWhereStmt(primaryKey, columnList);
+
+                sqlStmt = "select * from " + tableName + " where " + whereStmt;
             }
 
             var sessionSqlHistory = new SessionSqlHistory
