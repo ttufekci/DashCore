@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Web.App.BusinessLayer;
 using Web.App.Data;
@@ -24,8 +26,22 @@ namespace Web.App
         {
             services.AddMvc();
             // Add Database Initializer
+
+            var dashcoreDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                @"DashCore");
+
+            if (!File.Exists(dashcoreDir))
+            {
+                Directory.CreateDirectory(dashcoreDir);
+            }
+
+            var sqlitePath = "Data Source=" + Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                @"DashCore\CustomConnection.db");
+
             services.AddDbContext<CustomConnectionContext>(options =>
-                    options.UseSqlite("Data Source=CustomConnection.db"));
+                    options.UseSqlite(sqlitePath));
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<CustomConnectionContext>()
                 .AddDefaultTokenProviders();

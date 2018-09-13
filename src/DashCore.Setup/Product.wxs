@@ -8,6 +8,8 @@
 
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
 
+    <Property Id='ADMINPASSWORD' Secure='yes'/>
+
     <UI>
       <UIRef Id="WixUI_InstallDir" />
       <Dialog Id="MyDialog" Width="370" Height="270" Title="[ProductName] Setup" NoMinimize="yes">
@@ -52,7 +54,38 @@
 			<ComponentGroupRef Id="ProductComponents" />
       <ComponentGroupRef Id="aspcoreforwixsetupcomps" />
 		</Feature>
-	</Product>
+
+    <Property Id="POWERSHELLEXE">
+      <RegistrySearch Id="POWERSHELLEXE"
+                      Type="raw"
+                      Root="HKLM"
+                      Key="SOFTWARE\Microsoft\PowerShell\1\ShellIds\Microsoft.PowerShell"
+                      Name="Path" />
+    </Property>
+    <Condition Message="This application requires Windows PowerShell.">
+      <![CDATA[Installed OR POWERSHELLEXE]]>
+    </Condition>
+
+    <SetProperty Id="InvokeTestPS1"
+                 Before="InvokeTestPS1"
+                 Sequence="execute"
+                 Value ="&quot;[POWERSHELLEXE]&quot; -Version 2.0 -NoProfile -NonInteractive -InputFormat None -ExecutionPolicy Bypass -F &quot;[#InvokeTestPS1]&quot; -filePath &quot;myfile.txt&quot; -adminPass [ADMINPASSWORD]" />
+    <CustomAction Id="InvokeTestPS1"
+                  BinaryKey="WixCA"
+                  DllEntry="CAQuietExec"
+                  Execute="deferred"
+                  Return="check"
+                  Impersonate="no" />
+
+    <InstallExecuteSequence>
+      <Custom Action="InvokeTestPS1" After="InstallFiles">
+        <![CDATA[NOT Installed]]>
+      </Custom>
+      <!--<Custom Action="InvokeMyScriptPS1" After="InstallFiles">
+        <![CDATA[NOT Installed]]>
+      </Custom>-->
+    </InstallExecuteSequence>
+  </Product>
 
 	<Fragment>
 		<Directory Id="TARGETDIR" Name="SourceDir">

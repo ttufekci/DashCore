@@ -38,6 +38,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <WixExtension Include="WixUtilExtension">
+      <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
+      <Name>WixUtilExtension</Name>
+    </WixExtension>
     <WixExtension Include="WixUIExtension">
       <HintPath>$(WixExtDir)\WixUIExtension.dll</HintPath>
       <Name>WixUIExtension</Name>
@@ -50,7 +54,7 @@
   </Target>
   <Target Name="BeforeBuild">
     <Exec Command="dotnet publish D:\DashCore\src\Web.App\Web.App.csproj -c Release -r win10-x64" />
-    <Exec Command="editbin.exe /subsystem:windows D:\DashCore\src\Web.App\bin\Release\netcoreapp2.1\win10-x64\publish\Web.App.exe" />
+    <!--<Exec Command="editbin.exe /subsystem:windows D:\DashCore\src\Web.App\bin\Release\netcoreapp2.1\win10-x64\publish\Web.App.exe" />-->
     <PropertyGroup>
       <LinkerBaseInputPaths>D:\DashCore\src\Web.App\bin\Release\netcoreapp2.1\win10-x64\publish</LinkerBaseInputPaths>
       <DefineConstants>BasePath=D:\DashCore\src\Web.App\bin\Release\netcoreapp2.1\win10-x64\publish</DefineConstants>
