@@ -3,7 +3,7 @@
 	<Product Id="*" Name="DashCore.Setup" Language="1033" Version="1.0.0.0" Manufacturer="" UpgradeCode="2087543f-f24a-4ad9-b4e6-e8e55364bcad">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
-		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+		<MajorUpgrade AllowSameVersionUpgrades="yes" DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
 		<MediaTemplate />
 
 		<Feature Id="ProductFeature" Title="DashCore.Setup" Level="1">
