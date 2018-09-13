@@ -4,10 +4,53 @@
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
 		<MajorUpgrade AllowSameVersionUpgrades="yes" DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
-		<MediaTemplate />
+		<MediaTemplate EmbedCab="yes"/>
+
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+
+    <UI>
+      <UIRef Id="WixUI_InstallDir" />
+      <Dialog Id="MyDialog" Width="370" Height="270" Title="[ProductName] Setup" NoMinimize="yes">
+        <Control Id="Title" Type="Text" X="15" Y="6" Width="200" Height="15" Transparent="yes" NoPrefix="yes" TabSkip="no">
+          <Text>Choose Admin Password</Text>
+        </Control>
+        <Control Id="NameLabel" Type="Text" X="45" Y="73" Width="100" Height="15" TabSkip="no" Text="&amp;Admin Password:" />
+        <Control Id="NameEdit" Type="Edit" X="45" Y="85" Width="220" Height="18" Property="ADMINPASSWORD" Text="{80}" Password="yes"/>
+        <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Default="yes" Text="Back">
+          <Publish Event="NewDialog" Value="LicenseAgreementDlg" />
+        </Control>
+        <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="Next">
+          <!--<Condition Action="disable"><![CDATA[ADMINPASSWORD = ""]]></Condition>-->
+          <Publish Event="SpawnDialog" Value="UserIdError"><![CDATA[ADMINPASSWORD = ""]]></Publish>
+          <Publish Event="NewDialog" Value="InstallDirDlg" />
+          <!--<Condition Action="disable"><![CDATA[ADMINPASSWORD <> "1"]]></Condition>
+          <Condition Action="enable">ADMINPASSWORD = "1"</Condition>-->
+        </Control>
+        <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="!(loc.WixUICancel)">
+          <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+        </Control>
+        <!--<Control Id="CustomAction" Type="PushButton" X="195" Y="243" Width="56" Height="17" Default="yes" Text="Custom Action" >
+          <Publish Event="DoAction" Value="SilentExecExample">1</Publish>
+        </Control>-->
+      </Dialog>
+
+      <Dialog Id="UserIdError" Width="260" Height="85" NoMinimize="no" Title="[ProductName]">
+        <Control Id="UserIdErrorDesc" Type="Text" Width="194" Height="30" X="48" Y="15" Text="Please enter a Password." />
+        <Control Id="UserIdErrorOk" Type="PushButton" X="97" Y="57" Width="56" Height="17" Text="Ok">
+          <Publish  Event="EndDialog" Value="Return">1</Publish>
+        </Control>
+      </Dialog>
+
+      <!--<Publish Dialog="MyDialog" Control="Next" Event="NewDialog" Value="UserExit" Order="3"></Publish>-->
+      <Publish Dialog="LicenseAgreementDlg" Control="Next" Event="NewDialog" Value="MyDialog" Order="3">LicenseAccepted = "1"</Publish>
+      <Publish Dialog="InstallDirDlg" Control="Back" Event="NewDialog" Value="MyDialog" Order="4">2</Publish>
+    </UI>    
+
+    <WixVariable Id="WixUILicenseRtf" Value="licenceagreement.rtf" />
 
 		<Feature Id="ProductFeature" Title="DashCore.Setup" Level="1">
 			<ComponentGroupRef Id="ProductComponents" />
+      <ComponentGroupRef Id="aspcoreforwixsetupcomps" />
 		</Feature>
 	</Product>
 
