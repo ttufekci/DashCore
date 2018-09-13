@@ -21,10 +21,33 @@
   <ItemGroup>
     <Compile Include="Product.wxs" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="DashCore.Setup.wax" />
+    <Content Include="RemovePdbs.xslt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Web.App\Web.App.csproj">
+      <Name>Web.App</Name>
+      <Project>{36c05e93-9dde-4d69-8d14-b5c7005fec3b}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(WixTargetsPath)" Condition=" '$(WixTargetsPath)' != '' " />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets" Condition=" '$(WixTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets') " />
   <Target Name="EnsureWixToolsetInstalled" Condition=" '$(WixTargetsImported)' != 'true' ">
     <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
+  </Target>
+  <Target Name="BeforeBuild">
+    <Exec Command="dotnet publish D:\DashCore\src\Web.App\Web.App.csproj -c Release -r win10-x64" />
+    <Exec Command="editbin.exe /subsystem:windows D:\DashCore\src\Web.App\bin\Release\netcoreapp2.1\win10-x64\publish\Web.App.exe" />
+    <PropertyGroup>
+      <LinkerBaseInputPaths>D:\DashCore\src\Web.App\bin\Release\netcoreapp2.1\win10-x64\publish</LinkerBaseInputPaths>
+      <DefineConstants>BasePath=D:\DashCore\src\Web.App\bin\Release\netcoreapp2.1\win10-x64\publish</DefineConstants>
+    </PropertyGroup>
+    <HeatDirectory OutputFile="corecomponents.wxs" DirectoryRefId="INSTALLFOLDER" ComponentGroupName="aspcoreforwixsetupcomps" SuppressCom="true" Directory="D:\DashCore\src\Web.App\bin\Release\netcoreapp2.1\win10-x64\publish" SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" AutoGenerateGuids="false" GenerateGuidsNow="true" ToolPath="$(WixToolPath)" PreprocessorVariable="var.BasePath" Transforms="RemovePdbs.xslt" />
   </Target>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.
