@@ -122,7 +122,7 @@
             Name="DashCore"
             Description="DashCore"
             Target="[#fil9B874FF3B342EC4A161AB3C5974C5932]"
-            WorkingDirectory="APPLICATIONROOTDIRECTORY"/>
+            WorkingDirectory="INSTALLFOLDER"/>
         <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
         <RegistryValue
             Root="HKCU"
