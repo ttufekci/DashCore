@@ -24,6 +24,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="DashCore.Setup.wax" />
+    <Content Include="Invoke-Test.ps1" />
     <Content Include="licenceagreement.rtf" />
     <Content Include="RemovePdbs.xslt" />
   </ItemGroup>

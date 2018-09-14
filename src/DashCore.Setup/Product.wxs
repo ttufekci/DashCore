@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<Product Id="*" Name="DashCore.Setup" Language="1033" Version="1.0.0.0" Manufacturer="tspeech" UpgradeCode="2087543f-f24a-4ad9-b4e6-e8e55364bcad">
+	<Product Id="*" Name="DashCore.Setup" Language="1033" Version="1.0.0.1" Manufacturer="tspeech" UpgradeCode="2087543f-f24a-4ad9-b4e6-e8e55364bcad">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
 		<MajorUpgrade AllowSameVersionUpgrades="yes" DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
@@ -81,9 +81,6 @@
       <Custom Action="InvokeTestPS1" After="InstallFiles">
         <![CDATA[NOT Installed]]>
       </Custom>
-      <!--<Custom Action="InvokeMyScriptPS1" After="InstallFiles">
-        <![CDATA[NOT Installed]]>
-      </Custom>-->
     </InstallExecuteSequence>
   </Product>
 
@@ -101,6 +98,9 @@
 			<!-- <Component Id="ProductComponent"> -->
 				<!-- TODO: Insert files, registry keys, and other resources here. -->
 			<!-- </Component> -->
+      <Component Id="invoketestps1" Guid="e6fc15da-70f3-4942-a430-21a905ae236c">
+        <File Id="InvokeTestPS1" Source="Invoke-Test.ps1" />
+      </Component>      
 		</ComponentGroup>
 	</Fragment>
 </Wix>
