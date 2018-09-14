@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<Product Id="*" Name="DashCore.Setup" Language="1033" Version="1.0.0.1" Manufacturer="tspeech" UpgradeCode="2087543f-f24a-4ad9-b4e6-e8e55364bcad">
+	<Product Id="*" Name="DashCore.Setup" Language="1033" Version="1.0.0.2" Manufacturer="tspeech" UpgradeCode="2087543f-f24a-4ad9-b4e6-e8e55364bcad">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
 		<MajorUpgrade AllowSameVersionUpgrades="yes" DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
@@ -52,6 +52,7 @@
 
 		<Feature Id="ProductFeature" Title="DashCore.Setup" Level="1">
 			<ComponentGroupRef Id="ProductComponents" />
+      <ComponentGroupRef Id="ProductMenuComponents" />
       <ComponentGroupRef Id="aspcoreforwixsetupcomps" />
 		</Feature>
 
@@ -86,7 +87,10 @@
 
 	<Fragment>
 		<Directory Id="TARGETDIR" Name="SourceDir">
-			<Directory Id="ProgramFilesFolder">
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="DashCore"/>
+      </Directory>
+      <Directory Id="ProgramFilesFolder">
 				<Directory Id="INSTALLFOLDER" Name="DashCore.Setup" />
 			</Directory>
 		</Directory>
@@ -100,7 +104,24 @@
 			<!-- </Component> -->
       <Component Id="invoketestps1" Guid="e6fc15da-70f3-4942-a430-21a905ae236c">
         <File Id="InvokeTestPS1" Source="Invoke-Test.ps1" />
-      </Component>      
+      </Component>
 		</ComponentGroup>
-	</Fragment>
+
+    <ComponentGroup Id="ProductMenuComponents" Directory="ApplicationProgramsFolder">
+      <Component Id="ApplicationShortcut" Guid="{AE75A17D-3EBF-4B68-AA32-73D18D983317}" >
+        <Shortcut
+            Id="ApplicationStartMenuShortcut"
+            Name="DashCore"
+            Description="DashCore"
+            Target="[#fil9B874FF3B342EC4A161AB3C5974C5932]"
+            WorkingDirectory="APPLICATIONROOTDIRECTORY"/>
+        <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
+        <RegistryValue
+            Root="HKCU"
+            Key="Software\tspeech\DashCore"
+            Name="installed" Type="integer" Value="1"
+            KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
 </Wix>

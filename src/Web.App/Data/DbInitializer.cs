@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Web.App.Models;
 
 namespace Web.App.Data
@@ -12,15 +13,18 @@ namespace Web.App.Data
         private readonly CustomConnectionContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private IConfiguration _configuration;
 
         public DbInitializer(
             CustomConnectionContext context,
             UserManager<ApplicationUser> userManager,
-            RoleManager<IdentityRole> roleManager)
+            RoleManager<IdentityRole> roleManager,
+            IConfiguration Configuration)
         {
             _context = context;
             _userManager = userManager;
             _roleManager = roleManager;
+            _configuration = Configuration;
         }
 
         //This example just creates an Administrator role and one Admin users
@@ -32,8 +36,14 @@ namespace Web.App.Data
             //If there is already an Administrator role, abort
             if (_context.Roles.Any(r => r.Name == "Administrator")) return;
 
-            string user = "admin@test.com";
-            string password = "Admin+123";
+            var user = "admin";
+            var adminpass = _configuration["AppSettings:AdminDefaultPass"];
+            var password = "Admin+123";
+
+            if (!string.IsNullOrEmpty(adminpass))
+            {
+                password = adminpass;
+            }
 
             var identityResult = await _userManager.CreateAsync(new ApplicationUser { UserName = user, Email = user, EmailConfirmed = true }, password);
 
@@ -49,7 +59,8 @@ namespace Web.App.Data
 
         public static async void StaticInitialize(CustomConnectionContext paramContext,
             UserManager<ApplicationUser> paramUserManager,
-            RoleManager<IdentityRole> paramRoleManager)
+            RoleManager<IdentityRole> paramRoleManager,
+            IConfiguration configuration)
         {
             //create database schema if none exists
             paramContext.Database.EnsureCreated();
@@ -57,8 +68,14 @@ namespace Web.App.Data
             //If there is already an Administrator role, abort
             if (paramContext.Roles.Any(r => r.Name == "Administrator")) return;
 
-            string user = "admin@test.com";
-            string password = "Admin+123";
+            var user = "admin";
+            var adminpass = configuration["AppSettings:AdminDefaultPass"];
+            var password = "Admin+123";
+
+            if (!string.IsNullOrEmpty(adminpass))
+            {
+                password = adminpass;
+            }
 
             var identityResult = await paramUserManager.CreateAsync(new ApplicationUser { UserName = user, Email = user, EmailConfirmed = true }, password);
 

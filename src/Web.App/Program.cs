@@ -40,6 +40,16 @@ namespace Web.App
 
         public static void Main(string[] args)
         {
+            var currentPId = Process.GetCurrentProcess().Id;
+
+            foreach (Process PPath in Process.GetProcesses())
+            {
+                if (PPath.ProcessName.StartsWith("Web.App") && PPath.Id != currentPId)
+                {
+                    PPath.Kill();
+                }
+            }
+
             var host = BuildWebHost(args);           
 
             using (var scope = host.Services.CreateScope())
@@ -50,8 +60,9 @@ namespace Web.App
                     var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
                     var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
                     var context = serviceProvider.GetRequiredService<CustomConnectionContext>();
+                    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
 
-                    DbInitializer.StaticInitialize(context, userManager, roleManager);
+                    DbInitializer.StaticInitialize(context, userManager, roleManager, configuration);
                 }
                 catch
                 {
@@ -59,12 +70,17 @@ namespace Web.App
                 }
             }
 
+            #if !DEBUG
+            OpenBrowser("http://localhost:5001/");
+            #endif
+
             host.Run();
         }
 
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
+                .UseUrls("http://localhost:5001")
                 .Build();
     }
 }
