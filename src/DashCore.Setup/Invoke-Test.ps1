@@ -9,6 +9,6 @@ $appsettingsjson = "$scriptPath\appsettings.json"
 
 $a = Get-Content $appsettingsjson | ConvertFrom-Json
 
-$a.AppSettings.AdminDefaultPass = "changed successfully"
+$a.AppSettings.AdminDefaultPass = $adminPass
 
 $a | ConvertTo-Json | set-content $appsettingsjson
