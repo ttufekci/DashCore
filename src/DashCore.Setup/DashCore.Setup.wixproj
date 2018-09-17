@@ -54,13 +54,13 @@
     <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
   </Target>
   <Target Name="BeforeBuild">
-    <Exec Command="dotnet publish D:\DashCore\src\Web.App\Web.App.csproj -c Release -r win10-x64" />
+    <Exec Command="dotnet publish ..\Web.App\Web.App.csproj -c Release -r win10-x64" />
     <!--<Exec Command="editbin.exe /subsystem:windows D:\DashCore\src\Web.App\bin\Release\netcoreapp2.1\win10-x64\publish\Web.App.exe" />-->
     <PropertyGroup>
-      <LinkerBaseInputPaths>D:\DashCore\src\Web.App\bin\Release\netcoreapp2.1\win10-x64\publish</LinkerBaseInputPaths>
-      <DefineConstants>BasePath=D:\DashCore\src\Web.App\bin\Release\netcoreapp2.1\win10-x64\publish</DefineConstants>
+      <LinkerBaseInputPaths>..\Web.App\bin\Release\netcoreapp2.1\win10-x64\publish</LinkerBaseInputPaths>
+      <DefineConstants>BasePath=..\Web.App\bin\Release\netcoreapp2.1\win10-x64\publish</DefineConstants>
     </PropertyGroup>
-    <HeatDirectory OutputFile="corecomponents.wxs" DirectoryRefId="INSTALLFOLDER" ComponentGroupName="aspcoreforwixsetupcomps" SuppressCom="true" Directory="D:\DashCore\src\Web.App\bin\Release\netcoreapp2.1\win10-x64\publish" SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" AutoGenerateGuids="false" GenerateGuidsNow="true" ToolPath="$(WixToolPath)" PreprocessorVariable="var.BasePath" Transforms="RemovePdbs.xslt" />
+    <HeatDirectory OutputFile="corecomponents.wxs" DirectoryRefId="INSTALLFOLDER" ComponentGroupName="aspcoreforwixsetupcomps" SuppressCom="true" Directory="..\Web.App\bin\Release\netcoreapp2.1\win10-x64\publish" SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" AutoGenerateGuids="false" GenerateGuidsNow="true" ToolPath="$(WixToolPath)" PreprocessorVariable="var.BasePath" Transforms="RemovePdbs.xslt" />
   </Target>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.
